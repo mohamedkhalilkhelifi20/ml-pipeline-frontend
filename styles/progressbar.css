@@ -1,0 +1,284 @@
+/* =============================================================================
+   progressbar.css — Wizard Progress Indicator
+   Design médical professionnel : blanc / bleu clinique / gris doux
+   Police : importée via globals.css (DM Sans)
+   ============================================================================= */
+
+/* --------------------------------------------------------------------------
+   Wrapper global
+   -------------------------------------------------------------------------- */
+.progress-wrapper {
+    width: 100%;
+    padding: 2rem 2.5rem 1.25rem;
+    background: #ffffff;
+    border-bottom: 1px solid #e8edf3;
+}
+
+/* --------------------------------------------------------------------------
+   En-tête : titre du formulaire + badge modèle
+   -------------------------------------------------------------------------- */
+.progress-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 2rem;
+}
+
+.progress-title {
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: #94a3b8;
+}
+
+.progress-badge {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.3rem 0.75rem;
+    background: #f0fdf4;
+    border: 1px solid #bbf7d0;
+    border-radius: 99px;
+    font-size: 0.7rem;
+    font-weight: 600;
+    color: #16a34a;
+    letter-spacing: 0.04em;
+}
+
+.progress-badge-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: #22c55e;
+    animation: blink 2s ease-in-out infinite;
+}
+
+@keyframes blink {
+    0%, 100% { opacity: 1; }
+    50%       { opacity: 0.3; }
+}
+
+/* --------------------------------------------------------------------------
+   Piste des étapes
+   -------------------------------------------------------------------------- */
+.progress-track {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    position: relative;
+}
+
+/* Ligne de fond (toute la largeur) */
+.progress-track::before {
+    content: '';
+    position: absolute;
+    top: 20px;
+    left: 36px;
+    right: 36px;
+    height: 1.5px;
+    background: #e2e8f0;
+    z-index: 0;
+}
+
+/* --------------------------------------------------------------------------
+   Item d'étape
+   -------------------------------------------------------------------------- */
+.step-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.6rem;
+    position: relative;
+    z-index: 1;
+    flex: 1;
+}
+
+/* --------------------------------------------------------------------------
+   Bulle de numéro / icône
+   -------------------------------------------------------------------------- */
+.step-bubble {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.95rem;
+    position: relative;
+    z-index: 2;
+    transition: all 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+    cursor: default;
+    flex-shrink: 0;
+}
+
+/* État : terminé */
+.step-bubble--done {
+    background: #1d4ed8;
+    border: 2px solid #1d4ed8;
+    box-shadow: 0 2px 8px rgba(29, 78, 216, 0.25);
+}
+
+.step-bubble--done .step-check {
+    display: block;
+}
+
+.step-check {
+    display: none;
+    color: #ffffff;
+}
+
+/* État : actif */
+.step-bubble--active {
+    background: #ffffff;
+    border: 2.5px solid #1d4ed8;
+    box-shadow:
+            0 0 0 5px rgba(29, 78, 216, 0.08),
+            0 4px 14px rgba(29, 78, 216, 0.18);
+}
+
+/* État : en attente */
+.step-bubble--pending {
+    background: #f8fafc;
+    border: 2px solid #e2e8f0;
+}
+
+/* --------------------------------------------------------------------------
+   Icône et numéro dans la bulle
+   -------------------------------------------------------------------------- */
+.step-icon {
+    font-size: 1rem;
+    line-height: 1;
+}
+
+.step-number {
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: #cbd5e1;
+}
+
+.step-bubble--active .step-number {
+    color: #1d4ed8;
+}
+
+/* --------------------------------------------------------------------------
+   Labels sous les bulles
+   -------------------------------------------------------------------------- */
+.step-info {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.15rem;
+}
+
+.step-label {
+    font-size: 0.75rem;
+    font-weight: 500;
+    color: #94a3b8;
+    text-align: center;
+    white-space: nowrap;
+    transition: color 0.3s ease;
+    letter-spacing: 0.01em;
+}
+
+.step-label--done {
+    color: #1d4ed8;
+    font-weight: 600;
+}
+
+.step-label--active {
+    color: #1e40af;
+    font-weight: 700;
+}
+
+.step-sublabel {
+    font-size: 0.65rem;
+    color: #cbd5e1;
+    text-align: center;
+    white-space: nowrap;
+}
+
+.step-sublabel--active {
+    color: #93c5fd;
+}
+
+/* --------------------------------------------------------------------------
+   Barre de progression linéaire
+   -------------------------------------------------------------------------- */
+.progress-linear {
+    margin-top: 1.75rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.progress-bar-track {
+    flex: 1;
+    height: 4px;
+    background: #e2e8f0;
+    border-radius: 99px;
+    overflow: hidden;
+}
+
+.progress-bar-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #3b82f6, #1d4ed8);
+    border-radius: 99px;
+    transition: width 0.55s cubic-bezier(0.65, 0, 0.35, 1);
+    position: relative;
+}
+
+/* Reflet brillant sur la barre */
+.progress-bar-fill::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+            to bottom,
+            rgba(255,255,255,0.35) 0%,
+            transparent 100%
+    );
+    border-radius: 99px;
+}
+
+.progress-counter {
+    font-size: 0.72rem;
+    font-weight: 600;
+    color: #64748b;
+    white-space: nowrap;
+    min-width: 48px;
+    text-align: right;
+}
+
+.progress-counter span {
+    color: #1d4ed8;
+}
+
+/* --------------------------------------------------------------------------
+   Responsive
+   -------------------------------------------------------------------------- */
+@media (max-width: 640px) {
+    .progress-wrapper {
+        padding: 1.5rem 1.25rem 1rem;
+    }
+
+    .step-bubble {
+        width: 34px;
+        height: 34px;
+        font-size: 0.85rem;
+    }
+
+    .progress-track::before {
+        top: 17px;
+        left: 28px;
+        right: 28px;
+    }
+
+    .step-label {
+        font-size: 0.65rem;
+    }
+
+    .step-sublabel {
+        display: none;
+    }
+}

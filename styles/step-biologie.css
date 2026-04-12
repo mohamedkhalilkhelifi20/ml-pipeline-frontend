@@ -1,0 +1,373 @@
+/* =============================================================================
+   step-biologie.css — Étape 4 : Données Biologiques & Nutritionnelles
+   Design médical professionnel
+   Cohérent avec step-profil.css, step-vie.css, step-sante.css
+   ============================================================================= */
+
+/* --------------------------------------------------------------------------
+   Groupe de champs biologiques avec unité intégrée
+   -------------------------------------------------------------------------- */
+
+.bio-section {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.bio-field {
+    display: flex;
+    align-items: center;
+    gap: 0;
+    border: 1.5px solid var(--color-border-tertiary, #e2e8f0);
+    border-radius: 10px;
+    background: var(--color-background-secondary, #f8fafc);
+    overflow: hidden;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.bio-field:focus-within {
+    border-color: #1d4ed8;
+    background: var(--color-background-primary, #ffffff);
+    box-shadow: 0 0 0 3px rgba(29, 78, 216, 0.07);
+}
+
+/* Icône à gauche */
+.bio-field-icon {
+    width: 44px;
+    height: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1rem;
+    background: var(--color-background-secondary, #f8fafc);
+    border-right: 1px solid var(--color-border-tertiary, #e2e8f0);
+    flex-shrink: 0;
+    transition: background 0.2s;
+}
+
+.bio-field:focus-within .bio-field-icon {
+    background: #eff6ff;
+}
+
+/* Zone centrale */
+.bio-field-body {
+    flex: 1;
+    padding: 0 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+}
+
+.bio-field-label {
+    font-size: 0.68rem;
+    font-weight: 600;
+    color: var(--color-text-secondary, #64748b);
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+    padding-top: 7px;
+}
+
+.bio-input {
+    border: none;
+    background: transparent;
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--color-text-primary, #0f172a);
+    outline: none;
+    font-family: inherit;
+    padding: 0 0 7px;
+    width: 100%;
+}
+
+.bio-input::placeholder {
+    color: var(--color-border-tertiary, #cbd5e1);
+    font-weight: 400;
+    font-size: 0.9rem;
+}
+
+/* Unité à droite */
+.bio-field-unit {
+    padding: 0 14px;
+    font-size: 0.72rem;
+    font-weight: 700;
+    color: var(--color-text-secondary, #94a3b8);
+    letter-spacing: 0.04em;
+    white-space: nowrap;
+    flex-shrink: 0;
+    border-left: 1px solid var(--color-border-tertiary, #e2e8f0);
+    height: 48px;
+    display: flex;
+    align-items: center;
+    background: var(--color-background-secondary, #f8fafc);
+    transition: all 0.2s;
+}
+
+.bio-field:focus-within .bio-field-unit {
+    background: #eff6ff;
+    color: #1d4ed8;
+    border-left-color: #bfdbfe;
+}
+
+/* Indicateur de plage normale */
+.bio-range-bar {
+    height: 3px;
+    background: var(--color-border-tertiary, #e2e8f0);
+    border-radius: 99px;
+    overflow: hidden;
+    margin-top: 4px;
+}
+
+.bio-range-fill {
+    height: 100%;
+    border-radius: 99px;
+    transition: width 0.4s ease, background 0.3s ease;
+}
+
+.bio-range-fill--normal  { background: #22c55e; }
+.bio-range-fill--warn    { background: #f59e0b; }
+.bio-range-fill--danger  { background: #ef4444; }
+
+.bio-range-label {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 0.68rem;
+    color: var(--color-text-secondary, #94a3b8);
+    margin-top: 4px;
+}
+
+.bio-range-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+
+/* --------------------------------------------------------------------------
+   Paire de champs côte à côte — Tension artérielle (systolique / diastolique)
+   -------------------------------------------------------------------------- */
+
+.bio-pair {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+}
+
+.bio-pair-label {
+    font-size: 0.72rem;
+    font-weight: 600;
+    color: var(--color-text-secondary, #64748b);
+    letter-spacing: 0.02em;
+    margin-bottom: -4px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+/* Card tension spéciale */
+.bp-card {
+    background: var(--color-background-secondary, #f8fafc);
+    border: 1.5px solid var(--color-border-tertiary, #e2e8f0);
+    border-radius: 10px;
+    padding: 12px 14px;
+    transition: all 0.2s ease;
+}
+
+.bp-card:focus-within {
+    border-color: #1d4ed8;
+    background: var(--color-background-primary, #ffffff);
+    box-shadow: 0 0 0 3px rgba(29, 78, 216, 0.07);
+}
+
+.bp-card-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 6px;
+}
+
+.bp-card-name {
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: var(--color-text-secondary, #64748b);
+}
+
+.bp-card-icon {
+    font-size: 0.9rem;
+}
+
+.bp-input-row {
+    display: flex;
+    align-items: baseline;
+    gap: 4px;
+}
+
+.bp-input {
+    flex: 1;
+    border: none;
+    background: transparent;
+    font-size: 1.4rem;
+    font-weight: 800;
+    color: var(--color-text-primary, #0f172a);
+    outline: none;
+    font-family: inherit;
+    padding: 0;
+    min-width: 0;
+}
+
+.bp-input::placeholder {
+    color: var(--color-border-tertiary, #cbd5e1);
+    font-weight: 400;
+    font-size: 1.1rem;
+}
+
+.bp-unit {
+    font-size: 0.72rem;
+    font-weight: 600;
+    color: var(--color-text-secondary, #94a3b8);
+    flex-shrink: 0;
+}
+
+/* Badge pression pulsée calculé dynamiquement */
+.bp-pulse {
+    margin-top: 8px;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 0.68rem;
+    font-weight: 600;
+    padding: 2px 8px;
+    border-radius: 99px;
+}
+
+.bp-pulse--normal { background: #f0fdf4; color: #16a34a; border: 1px solid #bbf7d0; }
+.bp-pulse--warn   { background: #fefce8; color: #d97706; border: 1px solid #fde68a; }
+.bp-pulse--high   { background: #fef2f2; color: #dc2626; border: 1px solid #fca5a5; }
+
+/* --------------------------------------------------------------------------
+   Section header nutritionnel
+   -------------------------------------------------------------------------- */
+
+.nutrition-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 14px;
+    background: #fffbeb;
+    border: 1px solid #fde68a;
+    border-radius: 10px;
+}
+
+.nutrition-header-icon {
+    font-size: 1.2rem;
+    flex-shrink: 0;
+}
+
+.nutrition-header-text {
+    font-size: 0.75rem;
+    color: #92400e;
+    line-height: 1.4;
+}
+
+.nutrition-header-text strong {
+    font-weight: 700;
+    color: #78350f;
+}
+
+/* --------------------------------------------------------------------------
+   Grille 2 colonnes pour les champs nutritionnels
+   -------------------------------------------------------------------------- */
+
+.bio-grid-2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+}
+
+/* --------------------------------------------------------------------------
+   Badge de complétion global
+   -------------------------------------------------------------------------- */
+
+.completion-banner {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 16px;
+    background: #f0fdf4;
+    border: 1px solid #bbf7d0;
+    border-radius: 10px;
+}
+
+.completion-icon {
+    font-size: 1.2rem;
+    flex-shrink: 0;
+}
+
+.completion-text {
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: #15803d;
+}
+
+.completion-sub {
+    font-size: 0.68rem;
+    color: #16a34a;
+    margin-top: 1px;
+}
+
+/* Bouton submit spécial */
+.btn-submit {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 0.8rem 2rem;
+    background: linear-gradient(135deg, #1d4ed8, #1e40af);
+    color: #ffffff;
+    border: none;
+    border-radius: 10px;
+    font-size: 0.9rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-family: inherit;
+    letter-spacing: 0.01em;
+    box-shadow: 0 4px 14px rgba(29, 78, 216, 0.25);
+}
+
+.btn-submit:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 6px 20px rgba(29, 78, 216, 0.35);
+}
+
+.btn-submit:active {
+    transform: translateY(0);
+    box-shadow: none;
+}
+
+.btn-submit:disabled {
+    background: var(--color-border-tertiary, #cbd5e1);
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+}
+
+/* --------------------------------------------------------------------------
+   Responsive
+   -------------------------------------------------------------------------- */
+
+@media (max-width: 600px) {
+    .bio-pair {
+        grid-template-columns: 1fr;
+    }
+
+    .bio-grid-2 {
+        grid-template-columns: 1fr;
+    }
+
+    .bio-field-icon {
+        width: 38px;
+        height: 44px;
+    }
+}
