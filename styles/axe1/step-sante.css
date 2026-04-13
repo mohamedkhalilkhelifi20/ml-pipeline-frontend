@@ -1,0 +1,417 @@
+/* =============================================================================
+   step-sante.css — Étape 3 : Santé & Antécédents Médicaux
+   Design médical professionnel
+   Cohérent avec step-profil.css et step-vie.css
+   ============================================================================= */
+
+/* --------------------------------------------------------------------------
+   Grille de checkboxes médicales — conditions binaires (0/1)
+   Hypertension, Diabète, Cholestérol, CHD
+   -------------------------------------------------------------------------- */
+
+.condition-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+}
+
+.condition-card {
+    position: relative;
+    cursor: pointer;
+}
+
+.condition-card input[type="checkbox"] {
+    position: absolute;
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.condition-card-inner {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: 14px 14px 12px;
+    border: 1.5px solid var(--color-border-tertiary, #e2e8f0);
+    border-radius: 10px;
+    background: var(--color-background-secondary, #f8fafc);
+    transition:
+            border-color 0.2s ease,
+            background   0.2s ease,
+            box-shadow   0.2s ease;
+    user-select: none;
+    height: 100%;
+}
+
+.condition-card-inner:hover {
+    border-color: #93c5fd;
+    background: #f0f9ff;
+}
+
+.condition-card input:checked + .condition-card-inner {
+    border-color: #dc2626;
+    background: #fef2f2;
+    box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.06);
+}
+
+.condition-card-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.condition-card-icon {
+    width: 34px;
+    height: 34px;
+    border-radius: 9px;
+    background: #ffffff;
+    border: 1px solid var(--color-border-tertiary, #e2e8f0);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1rem;
+    transition: all 0.2s ease;
+}
+
+.condition-card input:checked + .condition-card-inner .condition-card-icon {
+    background: #fee2e2;
+    border-color: #fca5a5;
+}
+
+/* Checkbox custom */
+.condition-checkbox {
+    width: 18px;
+    height: 18px;
+    border-radius: 5px;
+    border: 1.5px solid var(--color-border-tertiary, #e2e8f0);
+    background: #ffffff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    transition: all 0.2s ease;
+}
+
+.condition-card input:checked + .condition-card-inner .condition-checkbox {
+    background: #dc2626;
+    border-color: #dc2626;
+}
+
+.condition-check-svg {
+    display: none;
+    color: #ffffff;
+}
+
+.condition-card input:checked + .condition-card-inner .condition-check-svg {
+    display: block;
+}
+
+.condition-card-label {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--color-text-primary, #1e293b);
+    line-height: 1.25;
+}
+
+.condition-card input:checked + .condition-card-inner .condition-card-label {
+    color: #b91c1c;
+}
+
+.condition-card-desc {
+    font-size: 0.68rem;
+    color: var(--color-text-secondary, #64748b);
+    line-height: 1.35;
+}
+
+/* --------------------------------------------------------------------------
+   Select avec icône à gauche — État de santé général
+   -------------------------------------------------------------------------- */
+
+.select-icon-wrapper {
+    position: relative;
+}
+
+.select-icon-left {
+    position: absolute;
+    left: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 1rem;
+    pointer-events: none;
+    z-index: 1;
+}
+
+.select-field-icon {
+    width: 100%;
+    appearance: none;
+    -webkit-appearance: none;
+    padding: 0.75rem 2.75rem 0.75rem 2.5rem;
+    border: 1.5px solid var(--color-border-tertiary, #e2e8f0);
+    border-radius: 10px;
+    background: var(--color-background-secondary, #f8fafc);
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: var(--color-text-primary, #0f172a);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-family: inherit;
+}
+
+.select-field-icon:focus {
+    outline: none;
+    border-color: #1d4ed8;
+    background: var(--color-background-primary, #ffffff);
+    box-shadow: 0 0 0 3px rgba(29, 78, 216, 0.08);
+}
+
+/* --------------------------------------------------------------------------
+   Radio pills horizontaux — Dépression (3 niveaux)
+   -------------------------------------------------------------------------- */
+
+.pill-group {
+    display: flex;
+    gap: 8px;
+}
+
+.pill-option {
+    position: relative;
+    flex: 1;
+    cursor: pointer;
+}
+
+.pill-option input[type="radio"] {
+    position: absolute;
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.pill-inner {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    padding: 10px 8px;
+    border: 1.5px solid var(--color-border-tertiary, #e2e8f0);
+    border-radius: 10px;
+    background: var(--color-background-secondary, #f8fafc);
+    transition: all 0.2s ease;
+    text-align: center;
+    user-select: none;
+}
+
+.pill-inner:hover {
+    border-color: #93c5fd;
+    background: #eff6ff;
+}
+
+.pill-option input:checked + .pill-inner {
+    border-color: #7c3aed;
+    background: #f5f3ff;
+    box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.07);
+}
+
+.pill-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--color-border-tertiary, #e2e8f0);
+    transition: background 0.2s ease;
+}
+
+.pill-option input:checked + .pill-inner .pill-dot {
+    background: #7c3aed;
+}
+
+.pill-label {
+    font-size: 0.72rem;
+    font-weight: 600;
+    color: var(--color-text-secondary, #64748b);
+    line-height: 1.25;
+    white-space: nowrap;
+}
+
+.pill-option input:checked + .pill-inner .pill-label {
+    color: #6d28d9;
+}
+
+.pill-sub {
+    font-size: 0.62rem;
+    color: var(--color-text-secondary, #94a3b8);
+    opacity: 0.8;
+}
+
+/* --------------------------------------------------------------------------
+   Toggle row compact — Assurance santé
+   -------------------------------------------------------------------------- */
+
+.toggle-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 16px;
+    background: var(--color-background-secondary, #f8fafc);
+    border: 1.5px solid var(--color-border-tertiary, #e2e8f0);
+    border-radius: 10px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    user-select: none;
+}
+
+.toggle-row:hover {
+    border-color: #93c5fd;
+    background: #f0f9ff;
+}
+
+.toggle-row.on {
+    border-color: #059669;
+    background: #f0fdf4;
+}
+
+.toggle-row-left {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.toggle-row-icon {
+    width: 36px;
+    height: 36px;
+    border-radius: 9px;
+    background: #ffffff;
+    border: 1px solid var(--color-border-tertiary, #e2e8f0);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1rem;
+    flex-shrink: 0;
+    transition: all 0.2s;
+}
+
+.toggle-row.on .toggle-row-icon {
+    border-color: #a7f3d0;
+    background: #d1fae5;
+}
+
+.toggle-row-name {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--color-text-primary, #1e293b);
+}
+
+.toggle-row.on .toggle-row-name {
+    color: #059669;
+}
+
+.toggle-row-desc {
+    font-size: 0.72rem;
+    color: var(--color-text-secondary, #94a3b8);
+}
+
+/* Switch vert pour assurance */
+.sw-green input:checked + .sw-track {
+    background: #059669 !important;
+}
+
+/* --------------------------------------------------------------------------
+   Segmented control — IMC (4 niveaux visuels)
+   -------------------------------------------------------------------------- */
+
+.bmi-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 8px;
+}
+
+.bmi-card {
+    position: relative;
+    cursor: pointer;
+}
+
+.bmi-card input[type="radio"] {
+    position: absolute;
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.bmi-inner {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    padding: 12px 6px 10px;
+    border: 1.5px solid var(--color-border-tertiary, #e2e8f0);
+    border-radius: 10px;
+    background: var(--color-background-secondary, #f8fafc);
+    transition: all 0.2s ease;
+    text-align: center;
+    user-select: none;
+}
+
+.bmi-inner:hover {
+    border-color: #93c5fd;
+}
+
+/* Couleurs par catégorie IMC */
+.bmi-card[data-bmi="1"] input:checked + .bmi-inner {
+    border-color: #0284c7;
+    background: #e0f2fe;
+    box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.08);
+}
+.bmi-card[data-bmi="2"] input:checked + .bmi-inner {
+    border-color: #059669;
+    background: #d1fae5;
+    box-shadow: 0 0 0 3px rgba(5, 150, 105, 0.08);
+}
+.bmi-card[data-bmi="3"] input:checked + .bmi-inner {
+    border-color: #d97706;
+    background: #fef3c7;
+    box-shadow: 0 0 0 3px rgba(217, 119, 6, 0.08);
+}
+.bmi-card[data-bmi="4"] input:checked + .bmi-inner {
+    border-color: #dc2626;
+    background: #fee2e2;
+    box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.08);
+}
+
+.bmi-emoji {
+    font-size: 1.3rem;
+    line-height: 1;
+}
+
+.bmi-label {
+    font-size: 0.7rem;
+    font-weight: 700;
+    color: var(--color-text-primary, #1e293b);
+    line-height: 1.2;
+}
+
+.bmi-range {
+    font-size: 0.62rem;
+    color: var(--color-text-secondary, #94a3b8);
+}
+
+/* --------------------------------------------------------------------------
+   Responsive
+   -------------------------------------------------------------------------- */
+
+@media (max-width: 600px) {
+    .condition-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .bmi-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .pill-group {
+        flex-direction: column;
+    }
+
+    .pill-inner {
+        flex-direction: row;
+        justify-content: flex-start;
+        padding: 10px 12px;
+    }
+}

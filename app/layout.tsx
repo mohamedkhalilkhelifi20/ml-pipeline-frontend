@@ -1,6 +1,9 @@
 import '@/styles/globals.css'
 import type { Metadata } from 'next'
-import React from "react";
+import React from 'react'
+
+import { SidebarProvider } from '@/contexts/SidebarContext'
+import Sidebar from '@/components/Sidebar'
 
 export const metadata: Metadata = {
     title: 'StrokeAI — Prédiction du risque d\'AVC',
@@ -8,13 +11,18 @@ export const metadata: Metadata = {
 }
 
 export default function RootLayout({
-                                       children,
-                                   }: {
+    children,
+}: {
     children: React.ReactNode
 }) {
     return (
         <html lang="fr">
-        <body>{children}</body>
+            <body>
+                <SidebarProvider>
+                    <Sidebar />
+                    {children}
+                </SidebarProvider>
+            </body>
         </html>
     )
 }

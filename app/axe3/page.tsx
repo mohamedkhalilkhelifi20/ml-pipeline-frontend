@@ -1,26 +1,29 @@
 'use client'
 
 // =============================================================================
-// app/axe1/page.tsx — Wizard Axe 1 : Risque d'AVC
-// Aligné sur schemas/axe1.py (Axe1Input / Axe1Output)
+// app/axe3/page.tsx — Wizard Axe 3 : Mortalité AVC (IST)
+// 3 étapes : Profil & Admission → Neurologie → Traitement
+// Modèle : CalibratedClassifierCV (Logistic Regression) — 2 endpoints parallèles
+//   · FDEAD — décès à 6 mois  (threshold 0.25)
+//   · DDEAD — décès à 14 jours (threshold 0.20)
 // =============================================================================
 
 import '@/styles/wizard.css'
 import { useState, useEffect, useCallback } from 'react'
 
-import ProgressBar  from '@/components/axe1/ProgressBar'
-import StepProfil   from '@/components/axe1/StepProfil'
-import StepVie      from '@/components/axe1/StepVie'
-import StepSante    from '@/components/axe1/StepSante'
-import StepBiologie from '@/components/axe1/StepBiologie'
-import ResultCard   from '@/components/axe1/ResultCard'
-import MenuButton   from '@/components/MenuButton'
+import ProgressBarAxe3  from '@/components/axe3/ProgressBarAxe3'
+import StepProfilAxe3   from '@/components/axe3/StepProfilAxe3'
+import StepNeurologie   from '@/components/axe3/StepNeurologie'
+import StepTraitement   from '@/components/axe3/StepTraitement'
+import ResultAxe3       from '@/components/axe3/ResultAxe3'
+
+import MenuButton from '@/components/MenuButton'
 
 import {
-    Axe1RawInput,
-    Axe1Output,
-    AXE1_DEFAULTS,
-    predictStroke,
+    Axe3Input,
+    Axe3Results,
+    AXE3_DEFAULTS,
+    predictAxe3,
     checkHealth,
 } from '@/lib/api'
 
@@ -28,18 +31,18 @@ import {
 // Types
 // --------------------------------------------------------------------------
 
-type WizardStep = 1 | 2 | 3 | 4
+type WizardStep = 1 | 2 | 3
 type PageState  = 'wizard' | 'loading' | 'result' | 'error'
 
 const LOADING_STEPS = [
-    'Préparation du payload (37 features)',
-    'Feature engineering (pulse_pressure, fat_ratio…)',
-    'Inférence LightGBM (threshold 0.25)',
-    'Récupération du résultat',
+    'Préparation des features IST (profil + neurologie + traitement)',
+    'Encodage RCONSC, STYPE, RXHEP — feature engineering',
+    'Inférence FDEAD — décès à 6 mois (Logistic Regression)',
+    'Inférence DDEAD — décès à 14 jours · fusion des prédictions',
 ]
 
 // --------------------------------------------------------------------------
-// Composant Loading
+// Sous-composant : Loading
 // --------------------------------------------------------------------------
 
 function LoadingView({ step }: { step: number }) {
@@ -48,15 +51,18 @@ function LoadingView({ step }: { step: number }) {
             <div className="loading-spinner" />
             <div className="loading-title">Analyse en cours…</div>
             <div className="loading-sub">
-                Le modèle LightGBM évalue le profil clinique du patient
+                Les deux modèles IST évaluent le risque de mortalité en parallèle
             </div>
             <div className="loading-steps">
                 {LOADING_STEPS.map((label, i) => (
-                    <div key={i} className={[
-                        'loading-step',
-                        i < step  ? 'loading-step--done'   : '',
-                        i === step ? 'loading-step--active' : '',
-                    ].join(' ').trim()}>
+                    <div
+                        key={i}
+                        className={[
+                            'loading-step',
+                            i < step   ? 'loading-step--done'   : '',
+                            i === step ? 'loading-step--active' : '',
+                        ].join(' ').trim()}
+                    >
                         <div className="loading-step-dot" />
                         {i < step ? `✓ ${label}` : label}
                     </div>
@@ -67,7 +73,7 @@ function LoadingView({ step }: { step: number }) {
 }
 
 // --------------------------------------------------------------------------
-// Composant Error
+// Sous-composant : Erreur
 // --------------------------------------------------------------------------
 
 function ErrorView({ message, onRetry }: { message: string; onRetry: () => void }) {
@@ -77,8 +83,8 @@ function ErrorView({ message, onRetry }: { message: string; onRetry: () => void 
             <div>
                 <div className="error-title">Erreur de connexion au backend</div>
                 <pre className="error-message" style={{ whiteSpace: 'pre-wrap', fontFamily: 'inherit' }}>
-          {message}
-        </pre>
+                    {message}
+                </pre>
                 <button className="btn-retry" onClick={onRetry}>Réessayer</button>
             </div>
         </div>
@@ -89,30 +95,31 @@ function ErrorView({ message, onRetry }: { message: string; onRetry: () => void 
 // Page principale
 // --------------------------------------------------------------------------
 
-export default function Axe1Page() {
-    const [formData,     setFormData]     = useState<Axe1RawInput>(AXE1_DEFAULTS)
-    const [currentStep,  setCurrentStep]  = useState<WizardStep>(1)
-    const [pageState,    setPageState]    = useState<PageState>('wizard')
-    const [loadingStep,  setLoadingStep]  = useState(0)
-    const [result,       setResult]       = useState<Axe1Output | null>(null)
-    const [errorMsg,     setErrorMsg]     = useState<string>('')
-    const [backendOnline,setBackendOnline]= useState<boolean | null>(null)
+export default function Axe3Page() {
+    const [formData,      setFormData]      = useState<Axe3Input>(AXE3_DEFAULTS)
+    const [currentStep,   setCurrentStep]   = useState<WizardStep>(1)
+    const [pageState,     setPageState]     = useState<PageState>('wizard')
+    const [loadingStep,   setLoadingStep]   = useState(0)
+    const [result,        setResult]        = useState<Axe3Results | null>(null)
+    const [errorMsg,      setErrorMsg]      = useState<string>('')
+    const [backendOnline, setBackendOnline] = useState<boolean | null>(null)
 
-    // Health check
+    // Health check toutes les 30 s
     useEffect(() => {
         checkHealth().then(setBackendOnline)
         const id = setInterval(() => checkHealth().then(setBackendOnline), 30_000)
         return () => clearInterval(id)
     }, [])
 
+    // Gestionnaire de modification générique pour les types mixtes (string | number)
     const handleChange = useCallback(
-        (field: keyof Axe1RawInput, value: number) =>
-            setFormData(prev => ({ ...prev, [field]: value })),
+        (field: keyof Axe3Input, value: Axe3Input[keyof Axe3Input]) =>
+            setFormData(prev => ({ ...prev, [field]: value } as Axe3Input)),
         [],
     )
 
     const goNext = useCallback(() =>
-        setCurrentStep(s => Math.min(4, s + 1) as WizardStep), [])
+        setCurrentStep(s => Math.min(3, s + 1) as WizardStep), [])
 
     const goBack = useCallback(() =>
         setCurrentStep(s => Math.max(1, s - 1) as WizardStep), [])
@@ -123,10 +130,10 @@ export default function Axe1Page() {
         setErrorMsg('')
 
         const id = setInterval(() =>
-            setLoadingStep(s => s < LOADING_STEPS.length - 1 ? s + 1 : s), 600)
+            setLoadingStep(s => s < LOADING_STEPS.length - 1 ? s + 1 : s), 700)
 
         try {
-            const output = await predictStroke(formData)
+            const output = await predictAxe3(formData)
             clearInterval(id)
             setResult(output)
             setPageState('result')
@@ -139,7 +146,7 @@ export default function Axe1Page() {
     }, [formData])
 
     const handleRestart = useCallback(() => {
-        setFormData(AXE1_DEFAULTS)
+        setFormData(AXE3_DEFAULTS)
         setCurrentStep(1)
         setResult(null)
         setErrorMsg('')
@@ -161,7 +168,7 @@ export default function Axe1Page() {
                         Stroke<span>AI</span>
                     </span>
                     <div className="wizard-nav-sep" />
-                    <span className="wizard-nav-axe">Axe 1 — Risque d&apos;AVC</span>
+                    <span className="wizard-nav-axe">Axe 3 — Mortalité AVC</span>
                 </div>
                 <div className="wizard-nav-right">
                     <div className={`wizard-status ${
@@ -178,22 +185,24 @@ export default function Axe1Page() {
             {/* ── ProgressBar ── */}
             {showProgress && (
                 <div className="wizard-progress">
-                    <ProgressBar currentStep={currentStep} totalSteps={4} />
+                    <ProgressBarAxe3 currentStep={currentStep} />
                 </div>
             )}
 
             {/* ── Contenu ── */}
             <main className="wizard-main">
 
-                {/* Wizard steps */}
+                {/* Étapes du wizard */}
                 {pageState === 'wizard' && (
                     <>
                         {currentStep === 1 && (
                             <div className="step-enter" key="s1">
-                                <StepProfil
+                                <StepProfilAxe3
                                     data={{
-                                        age:  formData.age,
-                                        Race: formData.Race,
+                                        AGE:    formData.AGE,
+                                        SEX:    formData.SEX,
+                                        RSBP:   formData.RSBP,
+                                        RDELAY: formData.RDELAY,
                                     }}
                                     onChange={handleChange}
                                     onNext={goNext}
@@ -203,13 +212,12 @@ export default function Axe1Page() {
 
                         {currentStep === 2 && (
                             <div className="step-enter" key="s2">
-                                <StepVie
+                                <StepNeurologie
                                     data={{
-                                        smoke:                        formData.smoke,
-                                        alcohol:                      formData.alcohol,
-                                        'sleep disorder':             formData['sleep disorder'],
-                                        'sleep time':                 formData['sleep time'],
-                                        'Minutes sedentary activity': formData['Minutes sedentary activity'],
+                                        RDEF_SCORE: formData.RDEF_SCORE,
+                                        RCONSC:     formData.RCONSC,
+                                        RATRIAL:    formData.RATRIAL,
+                                        STYPE:      formData.STYPE,
                                     }}
                                     onChange={handleChange}
                                     onNext={goNext}
@@ -220,47 +228,14 @@ export default function Axe1Page() {
 
                         {currentStep === 3 && (
                             <div className="step-enter" key="s3">
-                                <StepSante
+                                <StepTraitement
                                     data={{
-                                        hypertension:               formData.hypertension,
-                                        diabetes:                   formData.diabetes,
-                                        'high cholesterol':         formData['high cholesterol'],
-                                        'Coronary Heart Disease':   formData['Coronary Heart Disease'],
-                                        'General health condition': formData['General health condition'],
-                                        depression:                 formData.depression,
-                                        'Health Insurance':         formData['Health Insurance'],
-                                        'Body Mass Index':          formData['Body Mass Index'],
-                                    }}
-                                    onChange={handleChange}
-                                    onNext={goNext}
-                                    onBack={goBack}
-                                />
-                            </div>
-                        )}
-
-                        {currentStep === 4 && (
-                            <div className="step-enter" key="s4">
-                                <StepBiologie
-                                    data={{
-                                        'Systolic blood pressure':            formData['Systolic blood pressure'],
-                                        'Diastolic blood pressure':           formData['Diastolic blood pressure'],
-                                        'Low-density lipoprotein':            formData['Low-density lipoprotein'],
-                                        'Fasting Glucose':                    formData['Fasting Glucose'],
-                                        Potassium:                            formData.Potassium,
-                                        Sodium:                               formData.Sodium,
-                                        energy:                               formData.energy,
-                                        protein:                              formData.protein,
-                                        Carbohydrate:                         formData.Carbohydrate,
-                                        'Total fat':                          formData['Total fat'],
-                                        'Dietary fiber':                      formData['Dietary fiber'],
-                                        'Total saturated fatty acids':        formData['Total saturated fatty acids'],
-                                        'Total monounsaturated fatty acids':  formData['Total monounsaturated fatty acids'],
-                                        'Total polyunsaturated fatty acids':  formData['Total polyunsaturated fatty acids'],
+                                        RXASP: formData.RXASP,
+                                        RXHEP: formData.RXHEP,
                                     }}
                                     onChange={handleChange}
                                     onSubmit={handleSubmit}
                                     onBack={goBack}
-                                    isLoading={false}
                                 />
                             </div>
                         )}
@@ -271,7 +246,7 @@ export default function Axe1Page() {
 
                 {pageState === 'result' && result && (
                     <div className="step-enter">
-                        <ResultCard result={result} onRestart={handleRestart} />
+                        <ResultAxe3 results={result} onRestart={handleRestart} />
                     </div>
                 )}
 

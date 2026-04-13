@@ -1,0 +1,11 @@
+/* =============================================================================
+   step-profil-axe3.css — Axe 3 : Étape 1 Profil & Admission
+   Réutilise les patterns de step-demographie.css (a2-num-field, a2-sex-grid)
+   Pas de duplication : imports @/styles/axe2/step-demographie.css dans le TSX
+   ============================================================================= */
+
+/* Pas de styles supplémentaires nécessaires pour l'étape 1 d'Axe 3 :
+   tous les patterns sont couverts par :
+   - step-profil.css     → step-container, step-header, btn-next, field-group…
+   - step-demographie.css → a2-num-field, a2-sex-grid, a2-num-input…
+   Ce fichier est conservé pour extensibilité future. */
