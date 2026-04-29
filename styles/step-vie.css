@@ -1,0 +1,368 @@
+/* =============================================================================
+   step-vie.css — Étape 2 : Mode de Vie & Habitudes
+   Design médical professionnel
+   Cohérent avec step-profil.css — mêmes tokens de base
+   ============================================================================= */
+
+/* --------------------------------------------------------------------------
+   Toggle switch — Oui / Non (tabac, alcool, trouble du sommeil)
+   -------------------------------------------------------------------------- */
+
+.toggle-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.toggle-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1rem 1.25rem;
+    background: #f8fafc;
+    border: 1.5px solid #e2e8f0;
+    border-radius: 10px;
+    cursor: pointer;
+    transition:
+            border-color 0.2s ease,
+            background   0.2s ease;
+    user-select: none;
+}
+
+.toggle-item:hover {
+    border-color: #93c5fd;
+    background: #f0f9ff;
+}
+
+.toggle-item--active {
+    border-color: #1d4ed8;
+    background: #eff6ff;
+}
+
+.toggle-item-left {
+    display: flex;
+    align-items: center;
+    gap: 0.9rem;
+}
+
+.toggle-item-icon {
+    width: 38px;
+    height: 38px;
+    border-radius: 10px;
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.1rem;
+    flex-shrink: 0;
+    transition: border-color 0.2s ease;
+}
+
+.toggle-item--active .toggle-item-icon {
+    border-color: #bfdbfe;
+    background: #dbeafe;
+}
+
+.toggle-item-content {
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
+}
+
+.toggle-item-label {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #1e293b;
+    line-height: 1.2;
+}
+
+.toggle-item--active .toggle-item-label {
+    color: #1d4ed8;
+}
+
+.toggle-item-desc {
+    font-size: 0.72rem;
+    color: #94a3b8;
+    line-height: 1.3;
+}
+
+/* Switch pill */
+.toggle-switch {
+    position: relative;
+    width: 44px;
+    height: 24px;
+    flex-shrink: 0;
+}
+
+.toggle-switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+    position: absolute;
+}
+
+.toggle-switch-track {
+    position: absolute;
+    inset: 0;
+    border-radius: 99px;
+    background: #e2e8f0;
+    transition: background 0.25s ease;
+    cursor: pointer;
+}
+
+.toggle-switch input:checked + .toggle-switch-track {
+    background: #1d4ed8;
+}
+
+.toggle-switch-thumb {
+    position: absolute;
+    top: 3px;
+    left: 3px;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: #ffffff;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.15);
+    transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+    pointer-events: none;
+}
+
+.toggle-switch input:checked ~ .toggle-switch-thumb {
+    transform: translateX(20px);
+}
+
+/* --------------------------------------------------------------------------
+   Slider numérique — Temps de sommeil
+   -------------------------------------------------------------------------- */
+
+.slider-field-wrapper {
+    background: #f8fafc;
+    border: 1.5px solid #e2e8f0;
+    border-radius: 10px;
+    padding: 1.25rem 1.5rem;
+    transition: border-color 0.2s ease;
+}
+
+.slider-field-wrapper:focus-within {
+    border-color: #1d4ed8;
+    background: #ffffff;
+}
+
+.slider-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 1rem;
+}
+
+.slider-top-label {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: #374151;
+}
+
+.slider-top-icon {
+    font-size: 1rem;
+}
+
+.slider-value-badge {
+    display: flex;
+    align-items: baseline;
+    gap: 0.2rem;
+    background: #eff6ff;
+    border: 1px solid #bfdbfe;
+    border-radius: 8px;
+    padding: 0.25rem 0.7rem;
+}
+
+.slider-value-num {
+    font-size: 1.2rem;
+    font-weight: 800;
+    color: #1d4ed8;
+    line-height: 1;
+}
+
+.slider-value-unit {
+    font-size: 0.68rem;
+    font-weight: 600;
+    color: #60a5fa;
+    letter-spacing: 0.04em;
+}
+
+/* Range input */
+.slider-input {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 100%;
+    height: 5px;
+    border-radius: 99px;
+    background: linear-gradient(
+            to right,
+            #1d4ed8 0%,
+            #1d4ed8 var(--fill-pct, 50%),
+            #e2e8f0 var(--fill-pct, 50%),
+            #e2e8f0 100%
+    );
+    outline: none;
+    cursor: pointer;
+    margin-bottom: 0.6rem;
+}
+
+.slider-input::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: #ffffff;
+    border: 2.5px solid #1d4ed8;
+    box-shadow: 0 2px 6px rgba(29, 78, 216, 0.25);
+    cursor: pointer;
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.slider-input::-webkit-slider-thumb:hover {
+    transform: scale(1.15);
+    box-shadow: 0 3px 10px rgba(29, 78, 216, 0.35);
+}
+
+.slider-input::-moz-range-thumb {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: #ffffff;
+    border: 2.5px solid #1d4ed8;
+    box-shadow: 0 2px 6px rgba(29, 78, 216, 0.25);
+    cursor: pointer;
+}
+
+.slider-ticks {
+    display: flex;
+    justify-content: space-between;
+    padding: 0 2px;
+}
+
+.slider-tick {
+    font-size: 0.65rem;
+    color: #94a3b8;
+    font-weight: 500;
+}
+
+/* --------------------------------------------------------------------------
+   Input numérique — Activité sédentaire (minutes/jour)
+   -------------------------------------------------------------------------- */
+
+.number-field-wrapper {
+    background: #f8fafc;
+    border: 1.5px solid #e2e8f0;
+    border-radius: 10px;
+    padding: 1rem 1.25rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    transition: border-color 0.2s ease, background 0.2s ease;
+}
+
+.number-field-wrapper:focus-within {
+    border-color: #1d4ed8;
+    background: #ffffff;
+    box-shadow: 0 0 0 3px rgba(29, 78, 216, 0.08);
+}
+
+.number-field-icon {
+    font-size: 1.3rem;
+    flex-shrink: 0;
+}
+
+.number-field-content {
+    flex: 1;
+}
+
+.number-field-top {
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: #374151;
+    margin-bottom: 0.35rem;
+}
+
+.number-input {
+    width: 100%;
+    border: none;
+    background: transparent;
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: #0f172a;
+    outline: none;
+    font-family: inherit;
+    padding: 0;
+}
+
+.number-input::placeholder {
+    color: #cbd5e1;
+    font-weight: 400;
+    font-size: 0.95rem;
+}
+
+.number-field-unit {
+    font-size: 0.72rem;
+    font-weight: 600;
+    color: #94a3b8;
+    flex-shrink: 0;
+    letter-spacing: 0.03em;
+}
+
+/* Indicateur de zone normale */
+.range-indicator {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    margin-top: 0.5rem;
+    font-size: 0.7rem;
+    color: #94a3b8;
+}
+
+.range-indicator-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: #22c55e;
+    flex-shrink: 0;
+}
+
+.range-indicator-dot--warn {
+    background: #f59e0b;
+}
+
+/* --------------------------------------------------------------------------
+   Section header dans le body (sous-titres de groupe)
+   -------------------------------------------------------------------------- */
+
+.section-label {
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: #94a3b8;
+    margin-bottom: -0.5rem;
+}
+
+/* --------------------------------------------------------------------------
+   Responsive
+   -------------------------------------------------------------------------- */
+@media (max-width: 640px) {
+    .toggle-item {
+        padding: 0.85rem 1rem;
+    }
+
+    .slider-field-wrapper {
+        padding: 1rem;
+    }
+
+    .number-field-wrapper {
+        padding: 0.85rem 1rem;
+    }
+}

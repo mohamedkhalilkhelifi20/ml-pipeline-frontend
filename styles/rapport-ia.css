@@ -1,0 +1,511 @@
+/* =============================================================================
+   rapport-ia.css — Composant Rapport IA Gemini · Design "Luminary Medical"
+   ============================================================================= */
+
+/* ── CSS Variables par axe ───────────────────────────────────────────────── */
+.rapport-ia {
+  --raia-accent:      #1d4ed8;
+  --raia-accent-soft: #dbeafe;
+  --raia-accent-glow: rgba(29, 78, 216, 0.14);
+  --raia-header-bg:   linear-gradient(135deg, #0c1220 0%, #1a2744 55%, #0f1e36 100%);
+}
+.rapport-ia--axe1 { --raia-accent: #1d4ed8; --raia-accent-soft: #dbeafe; --raia-accent-glow: rgba(29, 78, 216, 0.14); }
+.rapport-ia--axe2 { --raia-accent: #b45309; --raia-accent-soft: #fef3c7; --raia-accent-glow: rgba(180, 83, 9, 0.14); }
+.rapport-ia--axe3 { --raia-accent: #be123c; --raia-accent-soft: #ffe4e6; --raia-accent-glow: rgba(190, 18, 60, 0.14); }
+
+/* ── Conteneur principal ─────────────────────────────────────────────────── */
+.rapport-ia {
+  position: relative;
+  margin-top: 28px;
+  border-radius: 16px;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  overflow: hidden;
+  box-shadow:
+    0 0 0 1px rgba(0,0,0,.03),
+    0 4px 16px rgba(0,0,0,.06),
+    0 16px 48px rgba(0,0,0,.04);
+  transition: box-shadow 0.35s ease, transform 0.2s ease;
+}
+.rapport-ia:hover {
+  box-shadow:
+    0 0 0 1px rgba(0,0,0,.04),
+    0 6px 24px rgba(0,0,0,.09),
+    0 20px 60px rgba(0,0,0,.06);
+}
+
+/* Accent stripe left */
+.rapport-ia::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 3px;
+  background: var(--raia-accent);
+  border-radius: 16px 0 0 16px;
+  z-index: 1;
+}
+
+/* ── Header ──────────────────────────────────────────────────────────────── */
+.rapport-ia__header {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 22px 16px 26px;
+  background: var(--raia-header-bg);
+  overflow: hidden;
+  gap: 12px;
+}
+
+/* Noise texture overlay */
+.rapport-ia__header::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* Shimmer sweep */
+.rapport-ia__header::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -120%;
+  width: 70%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,.06) 50%, transparent 100%);
+  animation: raia-shimmer 4s ease-in-out infinite;
+  z-index: 0;
+}
+@keyframes raia-shimmer {
+  0%   { left: -120%; }
+  60%, 100% { left: 180%; }
+}
+
+.rapport-ia__title {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #f1f5f9;
+  letter-spacing: 0.01em;
+}
+
+.rapport-ia__title-icon {
+  display: flex;
+  align-items: center;
+  color: var(--raia-accent-soft);
+  opacity: 0.9;
+  flex-shrink: 0;
+}
+
+.rapport-ia__badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 10.5px;
+  font-weight: 700;
+  padding: 3px 9px;
+  border-radius: 999px;
+  background: var(--raia-accent);
+  color: #fff;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  box-shadow: 0 2px 10px var(--raia-accent-glow), 0 0 0 1px rgba(255,255,255,.1) inset;
+}
+
+.rapport-ia__powered {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  color: #94a3b8;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+}
+
+.rapport-ia__powered-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #34d399;
+  box-shadow: 0 0 6px rgba(52, 211, 153, 0.7);
+  animation: raia-pulse-dot 2.5s ease-in-out infinite;
+  flex-shrink: 0;
+}
+@keyframes raia-pulse-dot {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50%       { opacity: .7; transform: scale(0.85); }
+}
+
+/* ── Body ────────────────────────────────────────────────────────────────── */
+.rapport-ia__body {
+  padding: 22px 26px 24px;
+  position: relative;
+}
+
+/* Dot-grid background in content area */
+.rapport-ia__body::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: radial-gradient(circle, #cbd5e1 1px, transparent 1px);
+  background-size: 22px 22px;
+  opacity: 0.25;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.rapport-ia__body > * {
+  position: relative;
+  z-index: 1;
+}
+
+/* ── Idle state ──────────────────────────────────────────────────────────── */
+.rapport-ia__idle {
+  text-align: center;
+  padding: 8px 0 4px;
+}
+
+.rapport-ia__idle-desc {
+  font-size: 13.5px;
+  color: #64748b;
+  line-height: 1.65;
+  max-width: 480px;
+  margin: 0 auto 20px;
+}
+
+.rapport-ia__idle-desc strong {
+  color: #334155;
+  font-weight: 600;
+}
+
+/* ── Generate button ─────────────────────────────────────────────────────── */
+.rapport-ia__btn-generate {
+  width: 100%;
+  padding: 13px 20px;
+  border: none;
+  border-radius: 10px;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  color: #fff;
+  background: linear-gradient(135deg, var(--raia-accent) 0%, color-mix(in srgb, var(--raia-accent) 80%, #000) 100%);
+  box-shadow: 0 4px 14px var(--raia-accent-glow), 0 1px 3px rgba(0,0,0,.1);
+  transition: opacity 0.18s, transform 0.15s, box-shadow 0.18s;
+  letter-spacing: 0.01em;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Inner shine */
+.rapport-ia__btn-generate::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -60%;
+  width: 40%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,.18), transparent);
+  transform: skewX(-20deg);
+  transition: left 0.4s ease;
+}
+
+.rapport-ia__btn-generate:hover::after { left: 160%; }
+.rapport-ia__btn-generate:hover {
+  opacity: 0.94;
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px var(--raia-accent-glow), 0 2px 6px rgba(0,0,0,.12);
+}
+.rapport-ia__btn-generate:active {
+  transform: translateY(0);
+  opacity: 1;
+}
+
+/* ── Loading ─────────────────────────────────────────────────────────────── */
+.rapport-ia__loading {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 16px 0 12px;
+}
+
+.rapport-ia__dots {
+  display: flex;
+  gap: 5px;
+  flex-shrink: 0;
+}
+
+.rapport-ia__dots span {
+  display: block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--raia-accent);
+  animation: raia-dot-bounce 1.3s ease-in-out infinite;
+}
+.rapport-ia__dots span:nth-child(1) { animation-delay: 0s;    }
+.rapport-ia__dots span:nth-child(2) { animation-delay: 0.18s; }
+.rapport-ia__dots span:nth-child(3) { animation-delay: 0.36s; }
+
+@keyframes raia-dot-bounce {
+  0%, 80%, 100% { transform: scale(0.7);  opacity: 0.45; }
+  40%            { transform: scale(1.25); opacity: 1;    }
+}
+
+.rapport-ia__loading-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: #1e293b;
+  margin-bottom: 3px;
+}
+
+.rapport-ia__loading-sub {
+  font-size: 12px;
+  color: #94a3b8;
+  line-height: 1.5;
+}
+
+/* ── Content area ────────────────────────────────────────────────────────── */
+.rapport-ia__content {
+  font-size: 14px;
+  line-height: 1.75;
+  color: #334155;
+  min-height: 48px;
+}
+
+/* Markdown elements */
+.raia__h1 {
+  font-size: 16px;
+  font-weight: 700;
+  color: #0f172a;
+  margin: 20px 0 10px;
+  padding-bottom: 8px;
+  border-bottom: 2px solid var(--raia-accent);
+  display: inline-block;
+  width: 100%;
+}
+
+.raia__h2 {
+  font-size: 14.5px;
+  font-weight: 700;
+  color: #0f172a;
+  margin: 18px 0 8px;
+  padding: 0 0 0 11px;
+  border-left: 3px solid var(--raia-accent);
+  letter-spacing: 0.005em;
+}
+
+.raia__h3 {
+  font-size: 13.5px;
+  font-weight: 600;
+  color: #334155;
+  margin: 14px 0 6px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  opacity: 0.8;
+}
+
+.raia__p {
+  margin: 0 0 10px;
+  color: #334155;
+}
+
+.raia__p:last-child { margin-bottom: 0; }
+
+.raia__ul {
+  list-style: none;
+  padding: 0;
+  margin: 4px 0 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.raia__li {
+  padding: 0 0 0 18px;
+  position: relative;
+  color: #475569;
+  font-size: 13.5px;
+  line-height: 1.6;
+}
+
+.raia__li::before {
+  content: '›';
+  position: absolute;
+  left: 4px;
+  top: 0;
+  color: var(--raia-accent);
+  font-weight: 700;
+  font-size: 15px;
+  line-height: 1.4;
+}
+
+.raia__li--numbered {
+  display: flex;
+  gap: 8px;
+  padding: 0;
+}
+
+.raia__li-num {
+  flex-shrink: 0;
+  font-weight: 700;
+  color: var(--raia-accent);
+  min-width: 20px;
+}
+
+.raia__hr {
+  border: none;
+  border-top: 1px solid #e2e8f0;
+  margin: 16px 0;
+}
+
+.raia__code {
+  font-family: var(--font-mono, 'Courier New', monospace);
+  font-size: 12.5px;
+  padding: 1px 5px;
+  background: var(--raia-accent-soft);
+  color: color-mix(in srgb, var(--raia-accent) 85%, #000);
+  border-radius: 4px;
+  border: 1px solid color-mix(in srgb, var(--raia-accent) 30%, transparent);
+}
+
+/* ── Blinking cursor ─────────────────────────────────────────────────────── */
+.rapport-ia__cursor {
+  display: inline-block;
+  width: 2px;
+  height: 15px;
+  background: var(--raia-accent);
+  margin-left: 3px;
+  vertical-align: middle;
+  border-radius: 1px;
+  box-shadow: 0 0 6px var(--raia-accent-glow);
+  animation: raia-blink 0.75s step-end infinite;
+}
+
+@keyframes raia-blink {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0; }
+}
+
+/* ── Actions ─────────────────────────────────────────────────────────────── */
+.rapport-ia__actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 18px;
+  padding-top: 16px;
+  border-top: 1px solid #f1f5f9;
+  flex-wrap: wrap;
+}
+
+.rapport-ia__btn-action {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  background: #fff;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: #475569;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s, color 0.15s, transform 0.12s, box-shadow 0.15s;
+  letter-spacing: 0.01em;
+}
+
+.rapport-ia__btn-action:hover {
+  background: #f8fafc;
+  border-color: #cbd5e1;
+  color: #1e293b;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(0,0,0,.06);
+}
+
+.rapport-ia__btn-action:active {
+  transform: translateY(0);
+}
+
+.rapport-ia__btn-action--copied {
+  color: #15803d;
+  border-color: #bbf7d0;
+  background: #f0fdf4;
+}
+
+/* ── Disclaimer ──────────────────────────────────────────────────────────── */
+.rapport-ia__disclaimer {
+  margin-top: 16px;
+  padding: 12px 15px;
+  background: linear-gradient(135deg, #fefce8 0%, #fffbeb 100%);
+  border: 1px solid #fde68a;
+  border-radius: 10px;
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  box-shadow: 0 1px 4px rgba(253, 224, 71, 0.15);
+}
+
+.rapport-ia__disclaimer-icon {
+  font-size: 14px;
+  line-height: 1.5;
+  flex-shrink: 0;
+}
+
+.rapport-ia__disclaimer-text {
+  font-size: 11.5px;
+  color: #78350f;
+  line-height: 1.6;
+  font-weight: 450;
+}
+
+/* ── Error state ─────────────────────────────────────────────────────────── */
+.rapport-ia__error {
+  padding: 16px;
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  border-radius: 10px;
+}
+
+.rapport-ia__error-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  font-weight: 700;
+  color: #dc2626;
+  margin-bottom: 8px;
+}
+
+.rapport-ia__error-msg {
+  font-size: 13px;
+  color: #b91c1c;
+  line-height: 1.5;
+  margin: 0 0 12px;
+  font-family: var(--font-mono, monospace);
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+/* ── Responsive ──────────────────────────────────────────────────────────── */
+@media (max-width: 600px) {
+  .rapport-ia__header { padding: 14px 18px 14px 22px; }
+  .rapport-ia__body   { padding: 18px 20px 20px; }
+  .rapport-ia__title  { font-size: 13px; gap: 7px; }
+  .rapport-ia__powered { display: none; }
+  .rapport-ia__btn-generate { font-size: 14px; padding: 12px 16px; }
+  .rapport-ia__idle-desc { font-size: 13px; }
+}

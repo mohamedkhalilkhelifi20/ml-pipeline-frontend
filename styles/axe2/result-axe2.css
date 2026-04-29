@@ -1,0 +1,351 @@
+/* =============================================================================
+   result-axe2.css — Axe 2 : Résultat Sévérité AVC
+   3 niveaux de sévérité : léger / modéré / sévère
+   ============================================================================= */
+
+/* --------------------------------------------------------------------------
+   Wrapper page résultat
+   -------------------------------------------------------------------------- */
+.a2-result-page {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+/* --------------------------------------------------------------------------
+   Hero card — verdict principal
+   -------------------------------------------------------------------------- */
+.a2-result-hero {
+    border-radius: 14px;
+    border: 1px solid #e2e8f0;
+    overflow: hidden;
+    box-shadow: 0 1px 3px rgba(0,0,0,.04), 0 8px 32px rgba(0,0,0,.05);
+}
+
+.a2-hero-banner {
+    padding: 24px 28px 20px;
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 16px;
+}
+
+/* Variantes sévérité */
+.a2-hero-banner--leger {
+    background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
+    border-bottom: 1px solid #bbf7d0;
+}
+.a2-hero-banner--modere {
+    background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%);
+    border-bottom: 1px solid #fde68a;
+}
+.a2-hero-banner--severe {
+    background: linear-gradient(135deg, #fff1f2 0%, #fee2e2 100%);
+    border-bottom: 1px solid #fca5a5;
+}
+
+.a2-hero-left {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    flex: 1;
+}
+
+.a2-eyebrow {
+    font-size: 0.68rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+}
+.a2-eyebrow--leger  { color: #16a34a; }
+.a2-eyebrow--modere { color: #d97706; }
+.a2-eyebrow--severe { color: #dc2626; }
+
+.a2-verdict {
+    font-size: 1.5rem;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    line-height: 1.15;
+}
+.a2-verdict--leger  { color: #14532d; }
+.a2-verdict--modere { color: #78350f; }
+.a2-verdict--severe { color: #7f1d1d; }
+
+.a2-verdict-sub {
+    font-size: 0.78rem;
+    line-height: 1.5;
+}
+.a2-verdict-sub--leger  { color: #166534; }
+.a2-verdict-sub--modere { color: #92400e; }
+.a2-verdict-sub--severe { color: #991b1b; }
+
+.a2-hero-icon {
+    font-size: 3rem;
+    line-height: 1;
+    flex-shrink: 0;
+    filter: drop-shadow(0 2px 4px rgba(0,0,0,.1));
+}
+
+/* --------------------------------------------------------------------------
+   Section probabilités par classe
+   -------------------------------------------------------------------------- */
+.a2-proba-section {
+    padding: 20px 28px;
+    background: #ffffff;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+.a2-proba-title {
+    font-size: 0.7rem;
+    font-weight: 700;
+    color: #64748b;
+    letter-spacing: 0.07em;
+    text-transform: uppercase;
+}
+
+.a2-proba-bars {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.a2-proba-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.a2-proba-label {
+    width: 58px;
+    font-size: 0.72rem;
+    font-weight: 600;
+    color: #374151;
+    flex-shrink: 0;
+    text-align: right;
+}
+
+.a2-proba-bar-wrap {
+    flex: 1;
+    height: 8px;
+    background: #e2e8f0;
+    border-radius: 99px;
+    overflow: hidden;
+}
+
+.a2-proba-bar-fill {
+    height: 100%;
+    border-radius: 99px;
+    transition: width 0.75s cubic-bezier(0.65, 0, 0.35, 1);
+}
+
+.a2-proba-bar-fill--severe { background: linear-gradient(90deg, #ef4444, #dc2626); }
+.a2-proba-bar-fill--modere { background: linear-gradient(90deg, #f59e0b, #d97706); }
+.a2-proba-bar-fill--leger  { background: linear-gradient(90deg, #22c55e, #16a34a); }
+
+.a2-proba-pct {
+    width: 40px;
+    font-size: 0.75rem;
+    font-weight: 800;
+    flex-shrink: 0;
+    text-align: right;
+}
+.a2-proba-pct--severe { color: #dc2626; }
+.a2-proba-pct--modere { color: #d97706; }
+.a2-proba-pct--leger  { color: #16a34a; }
+
+/* Ligne d'info : seuil / classe prédite */
+.a2-proba-info-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding-top: 2px;
+}
+
+.a2-proba-info-label {
+    font-size: 0.72rem;
+    color: #64748b;
+}
+
+.a2-proba-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 3px 10px;
+    border-radius: 99px;
+    font-size: 0.7rem;
+    font-weight: 700;
+}
+.a2-proba-badge--severe { background: #fff1f2; color: #dc2626; border: 1px solid #fca5a5; }
+.a2-proba-badge--modere { background: #fffbeb; color: #d97706; border: 1px solid #fde68a; }
+.a2-proba-badge--leger  { background: #f0fdf4; color: #16a34a; border: 1px solid #bbf7d0; }
+
+/* --------------------------------------------------------------------------
+   Card résumé déficits
+   -------------------------------------------------------------------------- */
+.a2-deficit-card {
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 14px;
+    overflow: hidden;
+    box-shadow: 0 1px 3px rgba(0,0,0,.04);
+}
+
+.a2-deficit-header {
+    padding: 14px 20px;
+    border-bottom: 1px solid #e2e8f0;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.a2-deficit-header-icon {
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    background: #eff6ff;
+    border: 1px solid #bfdbfe;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.9rem;
+    flex-shrink: 0;
+}
+
+.a2-deficit-header-title {
+    font-size: 0.82rem;
+    font-weight: 700;
+    color: #0f172a;
+}
+
+.a2-deficit-header-sub {
+    font-size: 0.68rem;
+    color: #94a3b8;
+    margin-top: 1px;
+}
+
+.a2-deficit-body {
+    padding: 16px 20px;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+}
+
+.a2-deficit-stat {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    padding: 12px 8px;
+    border-radius: 10px;
+    border: 1px solid #e2e8f0;
+    background: #f8fafc;
+}
+
+.a2-deficit-stat-value {
+    font-size: 1.6rem;
+    font-weight: 800;
+    line-height: 1;
+    letter-spacing: -0.02em;
+}
+.a2-deficit-stat-value--confirmed { color: #1d4ed8; }
+.a2-deficit-stat-value--uncertain { color: #d97706; }
+.a2-deficit-stat-value--ratio     { color: #0f172a; }
+
+.a2-deficit-stat-label {
+    font-size: 0.62rem;
+    font-weight: 600;
+    color: #94a3b8;
+    text-align: center;
+    line-height: 1.3;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+}
+
+/* --------------------------------------------------------------------------
+   Card recommandation clinique
+   -------------------------------------------------------------------------- */
+.a2-reco-card {
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 14px;
+    overflow: hidden;
+    box-shadow: 0 1px 3px rgba(0,0,0,.04);
+}
+
+.a2-reco-header {
+    padding: 14px 20px;
+    border-bottom: 1px solid #e2e8f0;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.a2-reco-icon {
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.9rem;
+    flex-shrink: 0;
+}
+.a2-reco-icon--leger  { background: #f0fdf4; border: 1px solid #bbf7d0; }
+.a2-reco-icon--modere { background: #fffbeb; border: 1px solid #fde68a; }
+.a2-reco-icon--severe { background: #fff1f2; border: 1px solid #fca5a5; }
+
+.a2-reco-title {
+    font-size: 0.82rem;
+    font-weight: 700;
+    color: #0f172a;
+}
+
+.a2-reco-body {
+    padding: 16px 20px;
+}
+
+.a2-reco-text {
+    font-size: 0.85rem;
+    color: #374151;
+    line-height: 1.7;
+}
+
+.a2-reco-disclaimer {
+    margin-top: 12px;
+    padding: 10px 14px;
+    background: #f8fafc;
+    border-radius: 8px;
+    font-size: 0.68rem;
+    color: #94a3b8;
+    line-height: 1.5;
+    display: flex;
+    gap: 6px;
+    align-items: flex-start;
+}
+
+/* --------------------------------------------------------------------------
+   Actions bas de page (réutilise btn-restart / btn-export de result-card.css)
+   -------------------------------------------------------------------------- */
+.a2-result-actions {
+    display: flex;
+    gap: 10px;
+    padding-bottom: 8px;
+}
+
+/* --------------------------------------------------------------------------
+   Responsive
+   -------------------------------------------------------------------------- */
+@media (max-width: 600px) {
+    .a2-hero-banner {
+        padding: 18px 20px 16px;
+        flex-direction: column-reverse;
+        gap: 12px;
+    }
+
+    .a2-hero-icon    { font-size: 2rem; }
+    .a2-verdict      { font-size: 1.25rem; }
+    .a2-proba-section { padding: 16px 20px; }
+    .a2-proba-label  { width: 46px; }
+    .a2-result-actions { flex-direction: column; }
+}

@@ -1,0 +1,195 @@
+/* =============================================================================
+   step-deficits.css — Axe 2 : Étape 2 Déficits Neurologiques
+   Styles spécifiques : sélecteur 3 états Y / N / C (IST)
+   ============================================================================= */
+
+/* --------------------------------------------------------------------------
+   Liste des 8 déficits
+   -------------------------------------------------------------------------- */
+.rdef-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+/* --------------------------------------------------------------------------
+   Item individuel
+   -------------------------------------------------------------------------- */
+.rdef-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 0.85rem 1.1rem;
+    background: #f8fafc;
+    border: 1.5px solid #e2e8f0;
+    border-radius: 10px;
+    transition: border-color 0.15s ease, background 0.15s ease;
+}
+
+/* Variantes état */
+.rdef-item--confirmed {
+    border-color: #bfdbfe;
+    background: #eff6ff;
+}
+
+.rdef-item--uncertain {
+    border-color: #fde68a;
+    background: #fffbeb;
+}
+
+.rdef-item-left {
+    display: flex;
+    align-items: center;
+    gap: 0.7rem;
+    flex: 1;
+    min-width: 0;
+}
+
+/* Numéro du déficit */
+.rdef-num {
+    width: 22px;
+    height: 22px;
+    border-radius: 6px;
+    background: #e2e8f0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.65rem;
+    font-weight: 700;
+    color: #64748b;
+    flex-shrink: 0;
+}
+
+.rdef-item--confirmed .rdef-num {
+    background: #dbeafe;
+    color: #1d4ed8;
+}
+
+.rdef-item--uncertain .rdef-num {
+    background: #fef3c7;
+    color: #d97706;
+}
+
+.rdef-name {
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: #374151;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.rdef-item--confirmed .rdef-name { color: #1e40af; }
+.rdef-item--uncertain .rdef-name { color: #92400e; }
+
+/* --------------------------------------------------------------------------
+   Boutons Y / N / C
+   -------------------------------------------------------------------------- */
+.rdef-options {
+    display: flex;
+    gap: 0.35rem;
+    flex-shrink: 0;
+}
+
+.rdef-btn {
+    padding: 0.38rem 0.85rem;
+    border-radius: 7px;
+    font-size: 0.72rem;
+    font-weight: 700;
+    cursor: pointer;
+    border: 1.5px solid #e2e8f0;
+    background: #ffffff;
+    color: #94a3b8;
+    transition: all 0.15s ease;
+    font-family: inherit;
+    letter-spacing: 0.02em;
+}
+
+.rdef-btn:hover {
+    border-color: #cbd5e1;
+    color: #374151;
+    background: #f8fafc;
+}
+
+/* Oui (Y) — bleu */
+.rdef-btn--y-active {
+    border-color: #1d4ed8;
+    background: #1d4ed8;
+    color: #ffffff;
+    box-shadow: 0 2px 6px rgba(29, 78, 216, 0.25);
+}
+
+/* Non (N) — gris ardoise */
+.rdef-btn--n-active {
+    border-color: #334155;
+    background: #334155;
+    color: #ffffff;
+}
+
+/* Incertain (C) — orange */
+.rdef-btn--c-active {
+    border-color: #d97706;
+    background: #d97706;
+    color: #ffffff;
+    box-shadow: 0 2px 6px rgba(217, 119, 6, 0.25);
+}
+
+/* --------------------------------------------------------------------------
+   Résumé live en bas de la liste
+   -------------------------------------------------------------------------- */
+.rdef-summary {
+    display: flex;
+    gap: 1rem;
+    padding: 0.75rem 1rem;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    margin-top: 0.5rem;
+    flex-wrap: wrap;
+}
+
+.rdef-summary-item {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-size: 0.7rem;
+    font-weight: 500;
+}
+
+.rdef-summary-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+
+.rdef-summary-dot--confirmed { background: #1d4ed8; }
+.rdef-summary-dot--uncertain { background: #d97706; }
+.rdef-summary-dot--absent    { background: #cbd5e1; }
+
+.rdef-summary-count { font-weight: 800; color: #0f172a; }
+.rdef-summary-label { color: #64748b; }
+
+/* --------------------------------------------------------------------------
+   Responsive
+   -------------------------------------------------------------------------- */
+@media (max-width: 640px) {
+    .rdef-item {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.65rem;
+    }
+
+    .rdef-options {
+        width: 100%;
+        justify-content: flex-start;
+    }
+
+    .rdef-btn {
+        flex: 1;
+        justify-content: center;
+        text-align: center;
+        padding: 0.4rem 0.5rem;
+    }
+}
