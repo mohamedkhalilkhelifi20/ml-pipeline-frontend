@@ -1,0 +1,550 @@
+/* =============================================================================
+   styles/history.css — Report history & detail pages
+   ============================================================================= */
+
+/* ── Root ── */
+.history-root {
+    min-height: 100vh;
+    background: #070c18;
+    color: #e2e8f0;
+    padding-bottom: 4rem;
+}
+
+/* ── Header ── */
+.history-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1.1rem 2rem;
+    background: rgba(10, 15, 28, 0.9);
+    border-bottom: 1px solid rgba(59, 130, 246, 0.1);
+    backdrop-filter: blur(12px);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+}
+
+.history-header-left {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.history-back {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    color: #64748b;
+    font-size: 0.8rem;
+    text-decoration: none;
+    transition: color 0.15s;
+}
+
+.history-back:hover {
+    color: #94a3b8;
+    text-decoration: none;
+}
+
+.history-page-title {
+    font-size: 1rem;
+    font-weight: 700;
+    color: #e2e8f0;
+    letter-spacing: -0.02em;
+}
+
+/* ── Body ── */
+.history-body {
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 2rem 1.5rem 0;
+}
+
+/* ── Toolbar ── */
+.history-toolbar {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 1.5rem;
+    flex-wrap: wrap;
+}
+
+.history-search-wrap {
+    flex: 1;
+    min-width: 200px;
+    position: relative;
+}
+
+.history-search-icon {
+    position: absolute;
+    left: 0.85rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #475569;
+    pointer-events: none;
+}
+
+.history-search {
+    width: 100%;
+    background: #0c1626;
+    border: 1px solid rgba(71, 85, 105, 0.35);
+    border-radius: 10px;
+    padding: 0.65rem 0.9rem 0.65rem 2.4rem;
+    font-size: 0.85rem;
+    color: #e2e8f0;
+    outline: none;
+    transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+.history-search::placeholder { color: #334155; }
+.history-search:focus {
+    border-color: rgba(59, 130, 246, 0.4);
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.08);
+}
+
+/* ── Filter pills ── */
+.history-filters {
+    display: flex;
+    gap: 0.4rem;
+}
+
+.history-filter {
+    padding: 0.35rem 0.75rem;
+    border-radius: 8px;
+    font-size: 0.72rem;
+    font-weight: 700;
+    cursor: pointer;
+    border: 1px solid rgba(71, 85, 105, 0.3);
+    background: #0c1626;
+    color: #64748b;
+    transition: all 0.15s;
+}
+
+.history-filter:hover { color: #94a3b8; }
+
+.history-filter--active-all {
+    background: rgba(29, 78, 216, 0.15);
+    border-color: rgba(59, 130, 246, 0.35);
+    color: #93c5fd;
+}
+
+.history-filter--active-1 {
+    background: rgba(59, 130, 246, 0.12);
+    border-color: rgba(59, 130, 246, 0.3);
+    color: #93c5fd;
+}
+
+.history-filter--active-2 {
+    background: rgba(139, 92, 246, 0.12);
+    border-color: rgba(139, 92, 246, 0.3);
+    color: #c4b5fd;
+}
+
+.history-filter--active-3 {
+    background: rgba(239, 68, 68, 0.1);
+    border-color: rgba(239, 68, 68, 0.28);
+    color: #fca5a5;
+}
+
+/* ── Count ── */
+.history-count {
+    font-size: 0.72rem;
+    color: #64748b;
+    padding: 0.2rem 0.5rem;
+    background: #0c1626;
+    border: 1px solid rgba(71, 85, 105, 0.2);
+    border-radius: 6px;
+    white-space: nowrap;
+}
+
+/* ── List ── */
+.history-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+    animation: slideUp 0.35s cubic-bezier(0.34,1.2,0.64,1) both;
+}
+
+/* ── Report row ── */
+.history-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: #0c1626;
+    border: 1px solid rgba(59, 130, 246, 0.08);
+    border-radius: 12px;
+    padding: 1rem 1.1rem;
+    text-decoration: none;
+    color: inherit;
+    transition: border-color 0.15s, background 0.15s;
+    gap: 1rem;
+}
+
+.history-row:hover {
+    border-color: rgba(59, 130, 246, 0.2);
+    background: rgba(29, 78, 216, 0.04);
+    text-decoration: none;
+    color: inherit;
+}
+
+.history-row-left {
+    display: flex;
+    align-items: center;
+    gap: 0.85rem;
+    flex: 1;
+    min-width: 0;
+}
+
+.history-row-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1rem;
+    flex-shrink: 0;
+}
+
+.history-row-icon--1 { background: rgba(59,130,246,0.12); }
+.history-row-icon--2 { background: rgba(139,92,246,0.12); }
+.history-row-icon--3 { background: rgba(239,68,68,0.1); }
+
+.history-row-info { flex: 1; min-width: 0; }
+
+.history-row-name {
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: #e2e8f0;
+    margin-bottom: 2px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.history-row-meta {
+    font-size: 0.72rem;
+    color: #64748b;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.history-row-right {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex-shrink: 0;
+}
+
+.history-tag {
+    font-size: 0.65rem;
+    font-weight: 700;
+    padding: 0.2rem 0.5rem;
+    border-radius: 6px;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+
+.history-tag--axe1 { background: rgba(59,130,246,0.15);  color: #93c5fd; }
+.history-tag--axe2 { background: rgba(139,92,246,0.15); color: #c4b5fd; }
+.history-tag--axe3 { background: rgba(239,68,68,0.12);  color: #fca5a5; }
+
+.history-verdict {
+    font-size: 0.65rem;
+    font-weight: 600;
+    padding: 0.18rem 0.5rem;
+    border-radius: 6px;
+    background: rgba(71, 85, 105, 0.2);
+    color: #94a3b8;
+    max-width: 110px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.history-delete-btn {
+    width: 28px;
+    height: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(239, 68, 68, 0.08);
+    border: 1px solid rgba(239, 68, 68, 0.18);
+    border-radius: 7px;
+    color: #f87171;
+    cursor: pointer;
+    transition: background 0.15s;
+    flex-shrink: 0;
+}
+
+.history-delete-btn:hover {
+    background: rgba(239, 68, 68, 0.18);
+}
+
+/* ── Empty ── */
+.history-empty {
+    text-align: center;
+    padding: 5rem 2rem;
+}
+
+.history-empty-icon {
+    font-size: 3.5rem;
+    display: block;
+    margin-bottom: 1rem;
+    opacity: 0.3;
+}
+
+.history-empty-title {
+    font-size: 1rem;
+    font-weight: 700;
+    color: #334155;
+    margin-bottom: 0.5rem;
+}
+
+.history-empty-sub {
+    font-size: 0.82rem;
+    color: #1e293b;
+}
+
+/* ── Skeleton ── */
+.history-skeleton-row {
+    height: 70px;
+    border-radius: 12px;
+    background: linear-gradient(90deg, #0c1626 25%, #111f36 50%, #0c1626 75%);
+    background-size: 200% 100%;
+    animation: shimmer 1.5s infinite;
+    margin-bottom: 0.6rem;
+}
+
+/* ── Detail page ── */
+.history-detail-root {
+    min-height: 100vh;
+    background: #070c18;
+    padding-bottom: 4rem;
+}
+
+.history-detail-body {
+    max-width: 860px;
+    margin: 0 auto;
+    padding: 2rem 1.5rem 0;
+}
+
+/* ── Detail hero ── */
+.history-detail-hero {
+    background: #0c1626;
+    border: 1px solid rgba(59, 130, 246, 0.1);
+    border-radius: 16px;
+    padding: 1.75rem;
+    margin-bottom: 1.25rem;
+    display: flex;
+    align-items: center;
+    gap: 1.25rem;
+    animation: slideUp 0.35s cubic-bezier(0.34,1.2,0.64,1) both;
+}
+
+.history-detail-axe-icon {
+    width: 56px;
+    height: 56px;
+    border-radius: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    flex-shrink: 0;
+}
+
+.history-detail-axe-icon--1 { background: rgba(59,130,246,0.15); }
+.history-detail-axe-icon--2 { background: rgba(139,92,246,0.15); }
+.history-detail-axe-icon--3 { background: rgba(239,68,68,0.1);  }
+
+.history-detail-patient-name {
+    font-size: 1.3rem;
+    font-weight: 800;
+    color: #f1f5f9;
+    letter-spacing: -0.03em;
+    margin-bottom: 0.2rem;
+}
+
+.history-detail-meta {
+    font-size: 0.78rem;
+    color: #64748b;
+}
+
+/* ── Section card ── */
+.history-section-card {
+    background: #0c1626;
+    border: 1px solid rgba(59, 130, 246, 0.08);
+    border-radius: 14px;
+    padding: 1.25rem 1.35rem;
+    margin-bottom: 1rem;
+    animation: slideUp 0.4s 0.05s cubic-bezier(0.34,1.2,0.64,1) both;
+}
+
+.history-section-title {
+    font-size: 0.65rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: #475569;
+    margin-bottom: 1rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid rgba(59, 130, 246, 0.07);
+}
+
+/* ── Prediction result grid ── */
+.history-pred-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 0.75rem;
+}
+
+.history-pred-item {
+    background: #091322;
+    border-radius: 10px;
+    padding: 0.85rem 1rem;
+}
+
+.history-pred-label {
+    font-size: 0.62rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: #475569;
+    margin-bottom: 0.25rem;
+}
+
+.history-pred-value {
+    font-size: 1rem;
+    font-weight: 700;
+    color: #e2e8f0;
+    letter-spacing: -0.02em;
+}
+
+.history-pred-value--high    { color: #f87171; }
+.history-pred-value--medium  { color: #fcd34d; }
+.history-pred-value--low     { color: #86efac; }
+
+/* ── Patient data table ── */
+.history-data-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 0.5rem;
+}
+
+.history-data-item {
+    background: #091322;
+    border-radius: 8px;
+    padding: 0.6rem 0.75rem;
+    overflow: hidden;
+}
+
+.history-data-key {
+    font-size: 0.6rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: #334155;
+    margin-bottom: 2px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.history-data-val {
+    font-size: 0.8rem;
+    color: #94a3b8;
+    font-weight: 500;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* ── AI Report text ── */
+.history-rapport-text {
+    font-size: 0.85rem;
+    line-height: 1.75;
+    color: #94a3b8;
+    white-space: pre-wrap;
+    word-break: break-word;
+}
+
+/* ── Delete zone ── */
+.history-danger-zone {
+    background: rgba(239, 68, 68, 0.04);
+    border: 1px solid rgba(239, 68, 68, 0.15);
+    border-radius: 12px;
+    padding: 1rem 1.25rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-top: 1.25rem;
+    animation: slideUp 0.5s 0.15s cubic-bezier(0.34,1.2,0.64,1) both;
+}
+
+.history-danger-text {
+    font-size: 0.8rem;
+    color: #64748b;
+}
+
+.history-danger-title {
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: #fca5a5;
+    margin-bottom: 2px;
+}
+
+.history-delete-confirm-btn {
+    background: rgba(239, 68, 68, 0.1);
+    border: 1px solid rgba(239, 68, 68, 0.3);
+    border-radius: 9px;
+    color: #f87171;
+    font-size: 0.78rem;
+    font-weight: 700;
+    padding: 0.55rem 1rem;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: background 0.15s;
+    flex-shrink: 0;
+}
+
+.history-delete-confirm-btn:hover:not(:disabled) {
+    background: rgba(239, 68, 68, 0.2);
+}
+
+.history-delete-confirm-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* ── Copy button ── */
+.history-copy-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    background: rgba(71, 85, 105, 0.15);
+    border: 1px solid rgba(71, 85, 105, 0.25);
+    border-radius: 8px;
+    color: #64748b;
+    font-size: 0.72rem;
+    font-weight: 600;
+    padding: 0.4rem 0.75rem;
+    cursor: pointer;
+    transition: all 0.15s;
+    margin-top: 0.75rem;
+}
+
+.history-copy-btn:hover {
+    color: #e2e8f0;
+    background: rgba(71, 85, 105, 0.25);
+}
+
+/* ── Responsive ── */
+@media (max-width: 640px) {
+    .history-header       { padding: 0.9rem 1rem; }
+    .history-body         { padding: 1.25rem 1rem 0; }
+    .history-detail-body  { padding: 1.25rem 1rem 0; }
+    .history-detail-hero  { flex-direction: column; }
+    .history-row-right    { flex-wrap: wrap; justify-content: flex-end; }
+    .history-verdict      { display: none; }
+}

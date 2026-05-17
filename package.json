@@ -2,6 +2,17 @@
   "name": "frontend",
   "version": "0.1.0",
   "private": true,
+  "description": "<div align=\"center\">",
+  "homepage": "https://github.com/mohamedkhalilkhelifi20/ml-pipeline-frontend#readme",
+  "bugs": {
+    "url": "https://github.com/mohamedkhalilkhelifi20/ml-pipeline-frontend/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mohamedkhalilkhelifi20/ml-pipeline-frontend.git"
+  },
+  "license": "ISC",
+  "author": "",
   "scripts": {
     "dev": "next dev",
     "build": "next build",

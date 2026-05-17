@@ -1,9 +1,351 @@
 // =============================================================================
-// lib/api.ts — Client FastAPI · Axe 1 Stroke Risk
-// Aligné exactement sur schemas/axe1.py (Axe1Input / Axe1Output)
+// lib/api.ts — Client FastAPI complet : Auth, Users, Clients, History, ML Axes
 // =============================================================================
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
+
+// =============================================================================
+// Auth — Types & Functions
+// =============================================================================
+
+export type UserRole = 'admin' | 'doctor' | 'secretary'
+
+export interface DoctorRegisterRequest {
+    email:      string
+    password:   string
+    full_name:  string
+    specialite: string
+}
+
+export interface SecretaryCreateRequest {
+    full_name:  string
+    email:      string
+    password:   string
+    telephone?: string
+    adresse?:   string
+}
+
+export interface SecretaryUpdateRequest {
+    full_name?:    string
+    telephone?:    string
+    adresse?:      string
+    new_password?: string
+}
+
+export interface TokenResponse {
+    access_token: string
+    token_type:   string
+    role:         string
+    user_id:      string
+    full_name:    string
+}
+
+export interface UserOut {
+    id:                  string
+    email:               string
+    full_name:           string
+    role:                UserRole
+    specialite?:         string
+    assigned_doctor_id?: string
+    telephone?:          string
+    adresse?:            string
+    is_active:           boolean
+}
+
+export interface SecretaryBasicOut {
+    id:         string
+    full_name:  string
+    email:      string
+    telephone?: string
+    adresse?:   string
+    is_active:  boolean
+}
+
+export interface DoctorInfo {
+    id:          string
+    full_name:   string
+    email:       string
+    specialite?: string
+    nb_clients:  number
+    secretary:   SecretaryBasicOut | null
+}
+
+export interface DoctorBasicOut {
+    id:          string
+    full_name:   string
+    email:       string
+    specialite?: string
+}
+
+export interface SecretaryInfo {
+    id:              string
+    full_name:       string
+    email:           string
+    role:            string
+    assigned_doctor: DoctorBasicOut | null
+}
+
+// ── Clients ────────────────────────────────────────────────────────────────────
+
+export interface ClientCreate {
+    nom:             string
+    prenom:          string
+    date_naissance?: string
+    sexe?:           'M' | 'F'
+    telephone?:      string
+    adresse?:        string
+    notes?:          string
+    doctor_id?:      string
+}
+
+export interface ClientOut {
+    id:              string
+    nom:             string
+    prenom:          string
+    date_naissance?: string
+    sexe?:           string
+    telephone?:      string
+    adresse?:        string
+    notes?:          string
+    doctor_id:       string
+    doctor_name?:    string
+    secretary_id:    string
+    secretary_name?: string
+    created_at:      string
+}
+
+// ── Rapports ───────────────────────────────────────────────────────────────────
+
+export interface RapportOut {
+    id:             string
+    axe:            1 | 2 | 3
+    patient_nom:    string
+    patient_prenom: string
+    client_id?:     string
+    doctor_id?:     string
+    patient_data:   Record<string, unknown>
+    prediction:     Record<string, unknown>
+    rapport_texte:  string
+    modele_llm:     string
+    medecin_nom?:   string
+    created_at:     string
+}
+
+// ── Helpers ────────────────────────────────────────────────────────────────────
+
+function authHeaders(token: string): HeadersInit {
+    return {
+        'Content-Type':  'application/json',
+        'Authorization': `Bearer ${token}`,
+    }
+}
+
+function authOnlyHeaders(token: string): HeadersInit {
+    return { 'Authorization': `Bearer ${token}` }
+}
+
+// ── Auth API ───────────────────────────────────────────────────────────────────
+
+export async function authLogin(email: string, password: string): Promise<TokenResponse> {
+    const form = new URLSearchParams()
+    form.append('username', email)
+    form.append('password', password)
+    const res = await fetch(`${API_BASE}/auth/login`, {
+        method:  'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body:    form.toString(),
+    })
+    return handleResponse<TokenResponse>(res)
+}
+
+export async function authRegister(data: DoctorRegisterRequest): Promise<UserOut> {
+    const res = await fetch(`${API_BASE}/auth/register`, {
+        method:  'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body:    JSON.stringify(data),
+    })
+    return handleResponse<UserOut>(res)
+}
+
+export async function authMe(token: string): Promise<UserOut> {
+    const res = await fetch(`${API_BASE}/auth/me`, {
+        headers: authOnlyHeaders(token),
+    })
+    return handleResponse<UserOut>(res)
+}
+
+// ── Users API (admin / secretary) ─────────────────────────────────────────────
+
+export async function listAllUsers(token: string): Promise<UserOut[]> {
+    const res = await fetch(`${API_BASE}/users/`, {
+        headers: authOnlyHeaders(token),
+    })
+    return handleResponse<UserOut[]>(res)
+}
+
+export async function listDoctors(token: string): Promise<UserOut[]> {
+    const res = await fetch(`${API_BASE}/users/doctors`, {
+        headers: authOnlyHeaders(token),
+    })
+    return handleResponse<UserOut[]>(res)
+}
+
+export async function toggleUserActive(token: string, userId: string): Promise<UserOut> {
+    const res = await fetch(`${API_BASE}/users/${userId}/toggle`, {
+        method:  'PUT',
+        headers: authOnlyHeaders(token),
+    })
+    return handleResponse<UserOut>(res)
+}
+
+// ── Doctor Workspace ───────────────────────────────────────────────────────────
+
+export async function getDoctorProfile(token: string): Promise<DoctorInfo> {
+    const res = await fetch(`${API_BASE}/doctor/me`, {
+        headers: authOnlyHeaders(token),
+    })
+    return handleResponse<DoctorInfo>(res)
+}
+
+export async function getDoctorClients(token: string): Promise<ClientOut[]> {
+    const res = await fetch(`${API_BASE}/doctor/clients`, {
+        headers: authOnlyHeaders(token),
+    })
+    const data = await handleResponse<{ total: number; clients: ClientOut[] }>(res)
+    return data.clients
+}
+
+export async function createSecretary(token: string, data: SecretaryCreateRequest): Promise<UserOut> {
+    const res = await fetch(`${API_BASE}/doctor/secretary`, {
+        method:  'POST',
+        headers: authHeaders(token),
+        body:    JSON.stringify(data),
+    })
+    return handleResponse<UserOut>(res)
+}
+
+export async function updateSecretary(token: string, data: SecretaryUpdateRequest): Promise<UserOut> {
+    const res = await fetch(`${API_BASE}/doctor/secretary`, {
+        method:  'PUT',
+        headers: authHeaders(token),
+        body:    JSON.stringify(data),
+    })
+    return handleResponse<UserOut>(res)
+}
+
+export async function deactivateSecretary(token: string): Promise<void> {
+    const res = await fetch(`${API_BASE}/doctor/secretary`, {
+        method:  'DELETE',
+        headers: authOnlyHeaders(token),
+    })
+    await handleResponse<unknown>(res)
+}
+
+export async function reactivateSecretary(token: string): Promise<UserOut> {
+    const res = await fetch(`${API_BASE}/doctor/secretary/reactivate`, {
+        method:  'POST',
+        headers: authOnlyHeaders(token),
+    })
+    return handleResponse<UserOut>(res)
+}
+
+// ── Secretary Workspace ────────────────────────────────────────────────────────
+
+export async function getSecretaryProfile(token: string): Promise<SecretaryInfo> {
+    const res = await fetch(`${API_BASE}/secretary/me`, {
+        headers: authOnlyHeaders(token),
+    })
+    return handleResponse<SecretaryInfo>(res)
+}
+
+export async function getSecretaryClients(token: string): Promise<ClientOut[]> {
+    const res = await fetch(`${API_BASE}/secretary/clients`, {
+        headers: authOnlyHeaders(token),
+    })
+    const data = await handleResponse<{ total: number; clients: ClientOut[] }>(res)
+    return data.clients
+}
+
+// ── Clients CRUD ───────────────────────────────────────────────────────────────
+
+export async function createClient(token: string, data: ClientCreate): Promise<ClientOut> {
+    const res = await fetch(`${API_BASE}/clients/`, {
+        method:  'POST',
+        headers: authHeaders(token),
+        body:    JSON.stringify(data),
+    })
+    return handleResponse<ClientOut>(res)
+}
+
+export async function getMyCreatedClients(token: string): Promise<ClientOut[]> {
+    const res = await fetch(`${API_BASE}/clients/my-created`, {
+        headers: authOnlyHeaders(token),
+    })
+    return handleResponse<ClientOut[]>(res)
+}
+
+export async function getMyClients(token: string): Promise<ClientOut[]> {
+    const res = await fetch(`${API_BASE}/clients/mine`, {
+        headers: authOnlyHeaders(token),
+    })
+    return handleResponse<ClientOut[]>(res)
+}
+
+export async function getClient(token: string, clientId: string): Promise<ClientOut> {
+    const res = await fetch(`${API_BASE}/clients/${clientId}`, {
+        headers: authOnlyHeaders(token),
+    })
+    return handleResponse<ClientOut>(res)
+}
+
+export async function getClientRapports(token: string, clientId: string): Promise<RapportOut[]> {
+    const res = await fetch(`${API_BASE}/clients/${clientId}/rapports`, {
+        headers: authOnlyHeaders(token),
+    })
+    return handleResponse<RapportOut[]>(res)
+}
+
+// ── History ────────────────────────────────────────────────────────────────────
+
+export async function listHistory(token: string): Promise<RapportOut[]> {
+    const res = await fetch(`${API_BASE}/history/`, {
+        headers: authOnlyHeaders(token),
+    })
+    const data = await handleResponse<{ total: number; rapports: RapportOut[] }>(res)
+    return data.rapports
+}
+
+export async function listMyHistory(token: string): Promise<RapportOut[]> {
+    const res = await fetch(`${API_BASE}/history/mine`, {
+        headers: authOnlyHeaders(token),
+    })
+    const data = await handleResponse<{ total: number; rapports: RapportOut[] }>(res)
+    return data.rapports
+}
+
+export async function getHistoryItem(token: string, rapportId: string): Promise<RapportOut> {
+    const res = await fetch(`${API_BASE}/history/${rapportId}`, {
+        headers: authOnlyHeaders(token),
+    })
+    return handleResponse<RapportOut>(res)
+}
+
+export async function deleteHistoryItem(token: string, rapportId: string): Promise<void> {
+    const res = await fetch(`${API_BASE}/history/${rapportId}`, {
+        method:  'DELETE',
+        headers: authOnlyHeaders(token),
+    })
+    await handleResponse<unknown>(res)
+}
+
+export async function searchPatientHistory(token: string, nom: string, prenom: string): Promise<RapportOut[]> {
+    const res = await fetch(
+        `${API_BASE}/history/patient/${encodeURIComponent(nom)}/${encodeURIComponent(prenom)}`,
+        { headers: authOnlyHeaders(token) }
+    )
+    const data = await handleResponse<{ patient: string; total: number; rapports: RapportOut[] }>(res)
+    return data.rapports
+}
 
 // -----------------------------------------------------------------------------
 // 1. Axe1Input — champs bruts collectés dans le wizard

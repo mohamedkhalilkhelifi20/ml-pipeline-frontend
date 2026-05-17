@@ -1,13 +1,16 @@
 'use client'
 
 // =============================================================================
-// app/page.tsx — Landing page StrokeAI
-// 3 axes de prédiction cliquables avec descriptions et visuels
+// app/page.tsx — Landing page StrokeAI (auth-gated)
+// Redirige vers /login si non authentifié, vers /dashboard si connecté
 // =============================================================================
 
 import '@/styles/home.css'
-import Link from 'next/link'
-import MenuButton from '@/components/MenuButton'
+import { useEffect }  from 'react'
+import { useRouter }  from 'next/navigation'
+import Link           from 'next/link'
+import MenuButton     from '@/components/MenuButton'
+import { useAuth }    from '@/contexts/AuthContext'
 
 // --------------------------------------------------------------------------
 // SVG Illustrations inline par axe
@@ -152,6 +155,36 @@ const AXES = [
 // --------------------------------------------------------------------------
 
 export default function HomePage() {
+    const { isAuthenticated, isLoading } = useAuth()
+    const router = useRouter()
+
+    useEffect(() => {
+        if (!isLoading && !isAuthenticated) {
+            router.replace('/login')
+        }
+    }, [isLoading, isAuthenticated, router])
+
+    // Afficher un écran vide pendant la vérification ou la redirection
+    if (isLoading || !isAuthenticated) {
+        return (
+            <div style={{
+                minHeight: '100vh',
+                background: '#070c18',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+            }}>
+                <div style={{
+                    width: 36, height: 36,
+                    border: '3px solid rgba(59,130,246,0.15)',
+                    borderTopColor: '#3b82f6',
+                    borderRadius: '50%',
+                    animation: 'spin 0.8s linear infinite',
+                }} />
+            </div>
+        )
+    }
+
     return (
         <div className="home-page">
 

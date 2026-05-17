@@ -3,25 +3,24 @@ import type { Metadata } from 'next'
 import React from 'react'
 
 import { SidebarProvider } from '@/contexts/SidebarContext'
-import Sidebar from '@/components/Sidebar'
+import { AuthProvider }    from '@/contexts/AuthContext'
+import Sidebar             from '@/components/Sidebar'
 
 export const metadata: Metadata = {
-    title: 'StrokeAI — Prédiction du risque d\'AVC',
-    description: 'Évaluation clinique basée sur LightGBM / NHANES',
+    title:       'StrokeAI — Prédiction du risque d\'AVC',
+    description: 'Évaluation clinique basée sur LightGBM / NHANES — Gestion patients et rapports IA',
 }
 
-export default function RootLayout({
-    children,
-}: {
-    children: React.ReactNode
-}) {
+export default function RootLayout({ children }: { children: React.ReactNode }) {
     return (
         <html lang="fr">
             <body>
-                <SidebarProvider>
-                    <Sidebar />
-                    {children}
-                </SidebarProvider>
+                <AuthProvider>
+                    <SidebarProvider>
+                        <Sidebar />
+                        {children}
+                    </SidebarProvider>
+                </AuthProvider>
             </body>
         </html>
     )
