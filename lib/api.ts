@@ -94,27 +94,35 @@ export interface ClientCreate {
     sexe?:           'M' | 'F'
     telephone?:      string
     adresse?:        string
-    notes?:          string
-    doctor_id?:      string
+    doctor_id?:      string   // optionnel : auto-rempli côté backend pour secrétaire
 }
 
 export interface ClientOut {
-    id:              string
-    nom:             string
-    prenom:          string
-    date_naissance?: string
-    sexe?:           string
-    telephone?:      string
-    adresse?:        string
-    notes?:          string
-    doctor_id:       string
-    doctor_name?:    string
-    secretary_id:    string
-    secretary_name?: string
-    created_at:      string
+    id:               string
+    numero_dossier:   string
+    full_name:        string
+    nom:              string
+    prenom:           string
+    date_naissance?:  string
+    sexe?:            string
+    telephone?:       string
+    adresse?:         string
+    doctor_id:        string
+    doctor_name?:     string
+    secretary_id:     string
+    secretary_name?:  string
+    created_at:       string
 }
 
 // ── Rapports ───────────────────────────────────────────────────────────────────
+
+export interface LabDocument {
+    id:            string
+    original_name: string
+    content_type:  string
+    size:          number
+    uploaded_at:   string
+}
 
 export interface RapportOut {
     id:             string
@@ -127,6 +135,8 @@ export interface RapportOut {
     prediction:     Record<string, unknown>
     rapport_texte:  string
     modele_llm:     string
+    note_medecin?:  string
+    documents_lab:  LabDocument[]
     medecin_nom?:   string
     created_at:     string
 }
@@ -268,6 +278,55 @@ export async function getSecretaryClients(token: string): Promise<ClientOut[]> {
 
 // ── Clients CRUD ───────────────────────────────────────────────────────────────
 
+export interface ClientUpdate {
+    nom?:            string
+    prenom?:         string
+    date_naissance?: string
+    sexe?:           string
+    telephone?:      string
+    adresse?:        string
+}
+
+export interface ProfileUpdateRequest {
+    full_name?:  string
+    email?:      string
+    telephone?:  string
+    adresse?:    string
+    specialite?: string
+}
+
+export interface ChangePasswordRequest {
+    current_password: string
+    new_password:     string
+}
+
+export async function updateProfile(token: string, data: ProfileUpdateRequest): Promise<UserOut> {
+    const res = await fetch(`${API_BASE}/auth/profile`, {
+        method:  'PUT',
+        headers: authHeaders(token),
+        body:    JSON.stringify(data),
+    })
+    return handleResponse<UserOut>(res)
+}
+
+export async function changePassword(token: string, data: ChangePasswordRequest): Promise<void> {
+    const res = await fetch(`${API_BASE}/auth/change-password`, {
+        method:  'PUT',
+        headers: authHeaders(token),
+        body:    JSON.stringify(data),
+    })
+    await handleResponse<unknown>(res)
+}
+
+export async function updateClient(token: string, clientId: string, data: ClientUpdate): Promise<ClientOut> {
+    const res = await fetch(`${API_BASE}/clients/${clientId}`, {
+        method:  'PUT',
+        headers: authHeaders(token),
+        body:    JSON.stringify(data),
+    })
+    return handleResponse<ClientOut>(res)
+}
+
 export async function createClient(token: string, data: ClientCreate): Promise<ClientOut> {
     const res = await fetch(`${API_BASE}/clients/`, {
         method:  'POST',
@@ -302,7 +361,91 @@ export async function getClientRapports(token: string, clientId: string): Promis
     const res = await fetch(`${API_BASE}/clients/${clientId}/rapports`, {
         headers: authOnlyHeaders(token),
     })
-    return handleResponse<RapportOut[]>(res)
+    const data = await handleResponse<{ total: number; rapports: RapportOut[] }>(res)
+    return data.rapports
+}
+
+// ── Rendez-vous ───────────────────────────────────────────────────────────────
+
+export interface RendezVousOut {
+    id:           string
+    client_id:    string
+    client_nom:   string
+    doctor_id:    string
+    doctor_nom:   string
+    secretary_id: string
+    date_heure:   string   // ISO string
+    duree:        number
+    motif?:       string
+    statut:       string   // confirme | annule | termine
+    created_at:   string
+}
+
+export interface RendezVousCreate {
+    client_id:  string
+    date_heure: string     // ISO string
+    motif?:     string
+}
+
+export interface RendezVousUpdate {
+    client_id?:  string
+    date_heure?: string    // ISO string
+    motif?:      string
+}
+
+export interface CreneauInfo {
+    heure:     string      // "08:00"
+    iso:       string      // "2024-01-15T08:00:00"
+    statut:    'libre' | 'pris'
+    rdv_id?:   string
+    client_id?: string
+}
+
+export interface CreneauxResponse {
+    date:       string
+    jour_ouvre: boolean
+    creneaux:   CreneauInfo[]
+}
+
+export async function listRendezVous(token: string): Promise<RendezVousOut[]> {
+    const res = await fetch(`${API_BASE}/rendezvous/`, {
+        headers: authOnlyHeaders(token),
+    })
+    return handleResponse<RendezVousOut[]>(res)
+}
+
+export async function createRendezVous(token: string, data: RendezVousCreate): Promise<RendezVousOut> {
+    const res = await fetch(`${API_BASE}/rendezvous/`, {
+        method:  'POST',
+        headers: authHeaders(token),
+        body:    JSON.stringify(data),
+    })
+    return handleResponse<RendezVousOut>(res)
+}
+
+export async function updateRendezVous(token: string, rdvId: string, data: RendezVousUpdate): Promise<RendezVousOut> {
+    const res = await fetch(`${API_BASE}/rendezvous/${rdvId}`, {
+        method:  'PUT',
+        headers: authHeaders(token),
+        body:    JSON.stringify(data),
+    })
+    return handleResponse<RendezVousOut>(res)
+}
+
+export async function cancelRendezVous(token: string, rdvId: string): Promise<void> {
+    const res = await fetch(`${API_BASE}/rendezvous/${rdvId}`, {
+        method:  'DELETE',
+        headers: authOnlyHeaders(token),
+    })
+    if (res.status === 204) return
+    await handleResponse<unknown>(res)
+}
+
+export async function getCreneaux(token: string, date: string): Promise<CreneauxResponse> {
+    const res = await fetch(`${API_BASE}/rendezvous/creneaux?date=${date}`, {
+        headers: authOnlyHeaders(token),
+    })
+    return handleResponse<CreneauxResponse>(res)
 }
 
 // ── History ────────────────────────────────────────────────────────────────────
@@ -316,7 +459,7 @@ export async function listHistory(token: string): Promise<RapportOut[]> {
 }
 
 export async function listMyHistory(token: string): Promise<RapportOut[]> {
-    const res = await fetch(`${API_BASE}/history/mine`, {
+    const res = await fetch(`${API_BASE}/history/`, {
         headers: authOnlyHeaders(token),
     })
     const data = await handleResponse<{ total: number; rapports: RapportOut[] }>(res)
@@ -338,6 +481,15 @@ export async function deleteHistoryItem(token: string, rapportId: string): Promi
     await handleResponse<unknown>(res)
 }
 
+export async function deleteAllRapports(token: string): Promise<number> {
+    const res = await fetch(`${API_BASE}/doctor/rapports`, {
+        method:  'DELETE',
+        headers: authOnlyHeaders(token),
+    })
+    const data = await handleResponse<{ deleted: number }>(res)
+    return data.deleted
+}
+
 export async function searchPatientHistory(token: string, nom: string, prenom: string): Promise<RapportOut[]> {
     const res = await fetch(
         `${API_BASE}/history/patient/${encodeURIComponent(nom)}/${encodeURIComponent(prenom)}`,
@@ -345,6 +497,202 @@ export async function searchPatientHistory(token: string, nom: string, prenom: s
     )
     const data = await handleResponse<{ patient: string; total: number; rapports: RapportOut[] }>(res)
     return data.rapports
+}
+
+// ── Note médecin & Documents laboratoire ──────────────────────────────────────
+
+// ── Enregistrer prédiction ML sans texte IA ────────────────────────────────
+
+export async function saveMLRapport(
+    token:       string,
+    axe:         1 | 2 | 3,
+    clientId:    string,
+    patientData: Record<string, unknown>,
+    prediction:  Record<string, unknown>,
+): Promise<{ rapport_id: string }> {
+    const res = await fetch(`${API_BASE}/history/save-prediction`, {
+        method:  'POST',
+        headers: authHeaders(token),
+        body:    JSON.stringify({ axe, client_id: clientId, patient_data: patientData, prediction }),
+    })
+    return handleResponse<{ rapport_id: string }>(res)
+}
+
+// ── Générer rapport IA Gemini pour un rapport existant (SSE streaming) ────
+
+export async function fetchRapportIA(
+    token:     string,
+    rapportId: string,
+    onChunk:   (text: string) => void,
+    onDone:    (rapportId: string) => void,
+    onError:   (err: string) => void,
+): Promise<void> {
+    try {
+        const response = await fetch(`${API_BASE}/doctor/rapports/${rapportId}/generate-ia`, {
+            method:  'POST',
+            headers: { 'Authorization': `Bearer ${token}` },
+        })
+        if (!response.ok) {
+            try {
+                const body = await response.json()
+                const raw = body.detail ?? `Erreur serveur ${response.status}`
+                onError(sanitizeGeminiError(typeof raw === 'string' ? raw : JSON.stringify(raw)))
+            } catch {
+                onError(sanitizeGeminiError(`Erreur serveur ${response.status}`))
+            }
+            return
+        }
+        const reader  = response.body?.getReader()
+        const decoder = new TextDecoder()
+        if (!reader) { onError('Stream non disponible'); return }
+        let buffer = ''
+        while (true) {
+            const { done, value } = await reader.read()
+            if (done) break
+            buffer += decoder.decode(value, { stream: true })
+            const lines = buffer.split('\n')
+            buffer = lines.pop() ?? ''
+            for (const line of lines) {
+                if (!line.startsWith('data: ')) continue
+                const content = line.slice(6)
+                if (content === '[DONE]') { onDone(rapportId); return }
+                if (content.startsWith('[ERROR]')) { onError(content.slice(8)); return }
+                try {
+                    const parsed = JSON.parse(content)
+                    if (parsed.saved && parsed.rapport_id) { onDone(parsed.rapport_id); return }
+                    else if (parsed.text) onChunk(parsed.text)
+                } catch { /* ignore */ }
+            }
+        }
+        onDone(rapportId)
+    } catch (err) {
+        onError(err instanceof Error ? err.message : 'Erreur réseau')
+    }
+}
+
+// ── Générer rapport IA Gemini authentifié via endpoint doctor (avec client) ─
+
+export async function fetchRapportAuthenticated(
+    token:      string,
+    clientId:   string,
+    axe:        1 | 2 | 3,
+    patient:    Record<string, unknown>,
+    prediction: Record<string, unknown>,
+    onChunk:    (text: string) => void,
+    onDone:     (rapportId: string) => void,
+    onError:    (err: string) => void,
+): Promise<void> {
+    try {
+        const response = await fetch(`${API_BASE}/doctor/clients/${clientId}/rapport/${axe}`, {
+            method:  'POST',
+            headers: authHeaders(token),
+            body:    JSON.stringify({ patient, prediction }),
+        })
+        if (!response.ok) {
+            try {
+                const body = await response.json()
+                const raw = body.detail ?? `Erreur serveur ${response.status}`
+                onError(sanitizeGeminiError(typeof raw === 'string' ? raw : JSON.stringify(raw)))
+            } catch {
+                onError(sanitizeGeminiError(`Erreur serveur ${response.status}`))
+            }
+            return
+        }
+        const reader  = response.body?.getReader()
+        const decoder = new TextDecoder()
+        if (!reader) { onError('Stream non disponible'); return }
+        let buffer = ''
+        while (true) {
+            const { done, value } = await reader.read()
+            if (done) break
+            buffer += decoder.decode(value, { stream: true })
+            const lines = buffer.split('\n')
+            buffer = lines.pop() ?? ''
+            for (const line of lines) {
+                if (!line.startsWith('data: ')) continue
+                const content = line.slice(6)
+                if (content === '[DONE]') { onDone(''); return }
+                if (content.startsWith('[ERROR]')) { onError(content.slice(8)); return }
+                try {
+                    const parsed = JSON.parse(content)
+                    if (parsed.saved && parsed.rapport_id) { onDone(parsed.rapport_id); return }
+                    else if (parsed.text) onChunk(parsed.text)
+                } catch { /* ignore */ }
+            }
+        }
+        onDone('')
+    } catch (err) {
+        onError(err instanceof Error ? err.message : 'Erreur réseau')
+    }
+}
+
+export async function updateRapport(
+    token: string,
+    rapportId: string,
+    data: {
+        note_medecin?:  string
+        rapport_texte?: string
+        patient_data?:  Record<string, unknown>
+        prediction?:    Record<string, unknown>
+    },
+): Promise<void> {
+    const res = await fetch(`${API_BASE}/doctor/rapports/${rapportId}`, {
+        method:  'PATCH',
+        headers: authHeaders(token),
+        body:    JSON.stringify(data),
+    })
+    await handleResponse<unknown>(res)
+}
+
+export async function updateRapportNote(token: string, rapportId: string, note: string): Promise<void> {
+    const res = await fetch(`${API_BASE}/doctor/rapports/${rapportId}/note`, {
+        method:  'PUT',
+        headers: authHeaders(token),
+        body:    JSON.stringify({ note }),
+    })
+    await handleResponse<unknown>(res)
+}
+
+export async function uploadLabDoc(token: string, rapportId: string, file: File): Promise<LabDocument> {
+    const form = new FormData()
+    form.append('file', file)
+    const res = await fetch(`${API_BASE}/doctor/rapports/${rapportId}/lab`, {
+        method:  'POST',
+        headers: { 'Authorization': `Bearer ${token}` },
+        body:    form,
+    })
+    return handleResponse<LabDocument>(res)
+}
+
+export async function downloadLabDoc(
+    token:     string,
+    rapportId: string,
+    fileId:    string,
+    filename:  string,
+): Promise<void> {
+    const res = await fetch(`${API_BASE}/doctor/rapports/${rapportId}/lab/${fileId}`, {
+        headers: { 'Authorization': `Bearer ${token}` },
+    })
+    if (!res.ok) {
+        let detail = `Erreur ${res.status}`
+        try { const b = await res.json(); detail = b.detail ?? detail } catch { /* ignore */ }
+        throw new ApiError(res.status, detail)
+    }
+    const blob = await res.blob()
+    const url  = URL.createObjectURL(blob)
+    const a    = Object.assign(document.createElement('a'), { href: url, download: filename })
+    document.body.appendChild(a)
+    a.click()
+    document.body.removeChild(a)
+    setTimeout(() => URL.revokeObjectURL(url), 1000)
+}
+
+export async function deleteLabDoc(token: string, rapportId: string, fileId: string): Promise<void> {
+    const res = await fetch(`${API_BASE}/doctor/rapports/${rapportId}/lab/${fileId}`, {
+        method:  'DELETE',
+        headers: authOnlyHeaders(token),
+    })
+    await handleResponse<unknown>(res)
 }
 
 // -----------------------------------------------------------------------------

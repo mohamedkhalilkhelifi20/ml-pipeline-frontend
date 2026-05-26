@@ -5,7 +5,6 @@ import React, { useEffect, useState, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import Link          from 'next/link'
 import { useAuth }   from '@/contexts/AuthContext'
-import MenuButton    from '@/components/MenuButton'
 import {
     getDoctorProfile, getSecretaryProfile,
     listMyHistory, listAllUsers,
@@ -13,6 +12,8 @@ import {
     toggleUserActive, createSecretary,
     ClientOut, RapportOut, UserOut, DoctorInfo, SecretaryInfo,
 } from '@/lib/api'
+import AppTopbar       from '@/components/AppTopbar'
+import EditClientModal from '@/components/EditClientModal'
 
 // ── Role badge ────────────────────────────────────────────────────────────────
 
@@ -177,11 +178,12 @@ function SecretaryModal({
 // =============================================================================
 
 function DoctorDashboard({ token }: { token: string }) {
-    const [profile,      setProfile]      = useState<DoctorInfo | null>(null)
-    const [clients,      setClients]      = useState<ClientOut[]>([])
-    const [history,      setHistory]      = useState<RapportOut[]>([])
-    const [loading,      setLoading]      = useState(true)
-    const [showSecModal, setShowSecModal] = useState(false)
+    const [profile,       setProfile]       = useState<DoctorInfo | null>(null)
+    const [clients,       setClients]       = useState<ClientOut[]>([])
+    const [history,       setHistory]       = useState<RapportOut[]>([])
+    const [loading,       setLoading]       = useState(true)
+    const [showSecModal,  setShowSecModal]  = useState(false)
+    const [editingClient, setEditingClient] = useState<ClientOut | null>(null)
 
     const loadData = useCallback(async () => {
         const [p, c, h] = await Promise.all([
@@ -316,8 +318,8 @@ function DoctorDashboard({ token }: { token: string }) {
                         : (
                             <div className="dash-list">
                                 {clients.slice(0, 5).map(c => (
-                                    <Link key={c.id} href={`/clients/${c.id}`} className="dash-item">
-                                        <div className="dash-item-left">
+                                    <div key={c.id} className="dash-item">
+                                        <Link href={`/clients/${c.id}`} className="dash-item-left" style={{ flex: 1, textDecoration: 'none', color: 'inherit' }}>
                                             <div className="dash-item-avatar">
                                                 {c.prenom?.[0]}{c.nom?.[0]}
                                             </div>
@@ -328,9 +330,9 @@ function DoctorDashboard({ token }: { token: string }) {
                                                     {c.date_naissance ? ` · ${c.date_naissance}` : ''}
                                                 </div>
                                             </div>
-                                        </div>
+                                        </Link>
                                         <span className="dash-item-chevron">›</span>
-                                    </Link>
+                                    </div>
                                 ))}
                             </div>
                         )}
@@ -388,6 +390,19 @@ function DoctorDashboard({ token }: { token: string }) {
                     }}
                 />
             )}
+
+            {/* Edit client modal */}
+            {editingClient && (
+                <EditClientModal
+                    token={token}
+                    client={editingClient}
+                    onClose={() => setEditingClient(null)}
+                    onSaved={updated => {
+                        setClients(prev => prev.map(c => c.id === updated.id ? updated : c))
+                        setEditingClient(null)
+                    }}
+                />
+            )}
         </>
     )
 }
@@ -397,22 +412,26 @@ function DoctorDashboard({ token }: { token: string }) {
 // =============================================================================
 
 function SecretaryDashboard({ token }: { token: string }) {
-    const [profile,  setProfile]  = useState<SecretaryInfo | null>(null)
-    const [clients,  setClients]  = useState<ClientOut[]>([])
-    const [loading,  setLoading]  = useState(true)
+    const [profile,       setProfile]       = useState<SecretaryInfo | null>(null)
+    const [clients,       setClients]       = useState<ClientOut[]>([])
+    const [loading,       setLoading]       = useState(true)
+    const [editingClient, setEditingClient] = useState<ClientOut | null>(null)
 
     useEffect(() => {
         Promise.all([
             getSecretaryProfile(token),
             getSecretaryClients(token),
         ])
-            .then(([p, c]) => { setProfile(p); setClients(c) })
+            .then(([p, c]) => {
+                setProfile(p)
+                setClients(c)
+            })
             .finally(() => setLoading(false))
     }, [token])
 
     if (loading) return (
         <div className="dash-section">
-            {[...Array(3)].map((_, i) => (
+            {[...Array(4)].map((_, i) => (
                 <div key={i} className="dash-skeleton dash-skeleton-row" />
             ))}
         </div>
@@ -420,6 +439,7 @@ function SecretaryDashboard({ token }: { token: string }) {
 
     return (
         <>
+            {/* Stats */}
             <div className="dash-stats">
                 <StatCard icon="👥" value={clients.length}
                     label="Dossiers créés"
@@ -429,73 +449,104 @@ function SecretaryDashboard({ token }: { token: string }) {
                     accent="linear-gradient(90deg, #0891b2, #06b6d4)" />
             </div>
 
-            {profile?.assigned_doctor && (
-                <div className="dash-section">
+            {/* Doctor card + quick actions */}
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr auto', gap: '1.25rem', marginBottom: '1.25rem' }}>
+                <div className="dash-section" style={{ margin: 0 }}>
                     <div className="dash-section-header">
-                        <span className="dash-section-title">🩺 Médecin assigné</span>
+                        <span className="dash-section-title">🩺 Médecin responsable</span>
                     </div>
-                    <div className="dash-info-card">
-                        <div className="dash-info-card-icon">🩺</div>
-                        <div>
-                            <div className="dash-info-card-name">{profile.assigned_doctor.full_name}</div>
-                            <div className="dash-info-card-sub">
-                                {profile.assigned_doctor.specialite ?? 'Médecin'} · {profile.assigned_doctor.email}
+                    {profile?.assigned_doctor ? (
+                        <div className="dash-info-card">
+                            <div className="dash-info-card-icon">🩺</div>
+                            <div style={{ flex: 1 }}>
+                                <div className="dash-info-card-name">{profile.assigned_doctor.full_name}</div>
+                                <div className="dash-info-card-sub">
+                                    {profile.assigned_doctor.specialite ?? 'Médecin'} · {profile.assigned_doctor.email}
+                                </div>
                             </div>
                         </div>
-                    </div>
-                </div>
-            )}
-
-            <div className="dash-section">
-                <div className="dash-section-header">
-                    <span className="dash-section-title">Actions rapides</span>
-                </div>
-                <div className="dash-actions" style={{ gridTemplateColumns: 'repeat(2, 1fr)', maxWidth: 320 }}>
-                    <Link href="/clients/new" className="dash-action-btn">
-                        <div className="dash-action-icon" style={{ background: '#dbeafe' }}>➕</div>
-                        Nouveau patient
-                    </Link>
-                    <Link href="/clients" className="dash-action-btn">
-                        <div className="dash-action-icon" style={{ background: '#d1fae5' }}>👥</div>
-                        Mes patients
-                    </Link>
-                </div>
-            </div>
-
-            <div className="dash-section">
-                <div className="dash-section-header">
-                    <span className="dash-section-title">Dossiers récents</span>
-                    <Link href="/clients" className="dash-section-link">Voir tous →</Link>
-                </div>
-                {clients.length === 0
-                    ? (
-                        <div className="dash-empty">
-                            <span className="dash-empty-icon">📁</span>
-                            <div className="dash-empty-text">Aucun dossier créé</div>
-                        </div>
-                    )
-                    : (
-                        <div className="dash-list">
-                            {clients.slice(0, 6).map(c => (
-                                <Link key={c.id} href={`/clients/${c.id}`} className="dash-item">
-                                    <div className="dash-item-left">
-                                        <div className="dash-item-avatar">
-                                            {c.prenom?.[0]}{c.nom?.[0]}
-                                        </div>
-                                        <div>
-                                            <div className="dash-item-name">{c.prenom} {c.nom}</div>
-                                            <div className="dash-item-meta">
-                                                {c.sexe === 'M' ? 'Homme' : c.sexe === 'F' ? 'Femme' : '—'}
-                                                {c.telephone ? ` · ${c.telephone}` : ''}
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <span className="dash-item-chevron">›</span>
-                                </Link>
-                            ))}
+                    ) : (
+                        <div className="dash-empty" style={{ padding: '1.5rem' }}>
+                            <div className="dash-empty-text">Aucun médecin assigné</div>
                         </div>
                     )}
+                </div>
+
+                <div className="dash-section" style={{ margin: 0, display: 'flex', flexDirection: 'column', justifyContent: 'center', minWidth: 190 }}>
+                    <div className="dash-section-header">
+                        <span className="dash-section-title">Actions rapides</span>
+                    </div>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                        <Link href="/clients/new" className="dash-action-btn"
+                            style={{ flexDirection: 'row', gap: '0.6rem', padding: '0.75rem 1rem', justifyContent: 'flex-start' }}>
+                            <div className="dash-action-icon" style={{ background: '#dbeafe', width: 32, height: 32, fontSize: '0.9rem' }}>➕</div>
+                            <span style={{ fontSize: '0.8rem' }}>Nouveau patient</span>
+                        </Link>
+                        <Link href="/clients" className="dash-action-btn"
+                            style={{ flexDirection: 'row', gap: '0.6rem', padding: '0.75rem 1rem', justifyContent: 'flex-start' }}>
+                            <div className="dash-action-icon" style={{ background: '#d1fae5', width: 32, height: 32, fontSize: '0.9rem' }}>👥</div>
+                            <span style={{ fontSize: '0.8rem' }}>Tous les patients</span>
+                        </Link>
+                    </div>
+                </div>
             </div>
+
+            {/* Recent clients */}
+            <div className="dash-section">
+                <div className="dash-section-header">
+                    <span className="dash-section-title">👥 Dossiers récents</span>
+                    <Link href="/clients" className="dash-section-link">Voir tous →</Link>
+                </div>
+                {clients.length === 0 ? (
+                    <div className="dash-empty">
+                        <span className="dash-empty-icon">📁</span>
+                        <div className="dash-empty-text">Aucun dossier créé</div>
+                        <Link href="/clients/new" className="dash-action-btn"
+                            style={{ display: 'inline-flex', marginTop: '0.75rem', padding: '0.5rem 1.25rem' }}>
+                            ➕ Créer le premier patient
+                        </Link>
+                    </div>
+                ) : (
+                    <div className="dash-list">
+                        {clients.slice(0, 8).map(c => (
+                            <div key={c.id} className="dash-item">
+                                <Link href={`/clients/${c.id}`} className="dash-item-left" style={{ flex: 1, textDecoration: 'none', color: 'inherit' }}>
+                                    <div className="dash-item-avatar">
+                                        {c.prenom?.[0]}{c.nom?.[0]}
+                                    </div>
+                                    <div>
+                                        <div className="dash-item-name">{c.prenom} {c.nom}</div>
+                                        <div className="dash-item-meta">
+                                            {c.sexe === 'M' ? 'Homme' : c.sexe === 'F' ? 'Femme' : '—'}
+                                            {c.telephone ? ` · ${c.telephone}` : ''}
+                                        </div>
+                                    </div>
+                                </Link>
+                                <button
+                                    className="dash-item-edit-btn"
+                                    onClick={() => setEditingClient(c)}
+                                    title="Modifier"
+                                >
+                                    ✏️
+                                </button>
+                                <span className="dash-item-chevron">›</span>
+                            </div>
+                        ))}
+                    </div>
+                )}
+            </div>
+
+            {editingClient && (
+                <EditClientModal
+                    token={token}
+                    client={editingClient}
+                    onClose={() => setEditingClient(null)}
+                    onSaved={updated => {
+                        setClients(prev => prev.map(c => c.id === updated.id ? updated : c))
+                        setEditingClient(null)
+                    }}
+                />
+            )}
         </>
     )
 }
@@ -649,24 +700,7 @@ export default function DashboardPage() {
 
     return (
         <div className="dash-root">
-            {/* Topbar */}
-            <div className="dash-topbar">
-                <div className="dash-topbar-left">
-                    <MenuButton />
-                    <span className="dash-topbar-logo">Stroke<span>AI</span></span>
-                    <RoleBadge role={user.role} />
-                </div>
-                <div className="dash-topbar-right">
-                    <span className="dash-user-name">{user.full_name}</span>
-                    <button className="dash-logout-btn" onClick={() => { logout(); router.push('/login') }}>
-                        <svg width="13" height="13" viewBox="0 0 13 13" fill="none">
-                            <path d="M4.5 2.5H2a1 1 0 00-1 1v6a1 1 0 001 1h2.5M8.5 9.5l3-3-3-3M11.5 6.5H5"
-                                stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-                        </svg>
-                        Déconnexion
-                    </button>
-                </div>
-            </div>
+            <AppTopbar />
 
             {/* Body */}
             <div className="dash-body">

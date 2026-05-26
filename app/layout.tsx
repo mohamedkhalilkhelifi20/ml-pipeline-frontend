@@ -5,6 +5,7 @@ import React from 'react'
 import { SidebarProvider } from '@/contexts/SidebarContext'
 import { AuthProvider }    from '@/contexts/AuthContext'
 import Sidebar             from '@/components/Sidebar'
+import ToasterProvider     from '@/components/ToasterProvider'
 
 export const metadata: Metadata = {
     title:       'StrokeAI — Prédiction du risque d\'AVC',
@@ -13,12 +14,13 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
     return (
-        <html lang="fr">
+        <html lang="fr" data-scroll-behavior="smooth">
             <body>
                 <AuthProvider>
                     <SidebarProvider>
                         <Sidebar />
                         {children}
+                        <ToasterProvider />
                     </SidebarProvider>
                 </AuthProvider>
             </body>

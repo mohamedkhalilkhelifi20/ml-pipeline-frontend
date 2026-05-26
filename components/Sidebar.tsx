@@ -1,9 +1,5 @@
 'use client'
 
-// =============================================================================
-// components/Sidebar.tsx — Sidebar de navigation auth-aware
-// =============================================================================
-
 import '@/styles/sidebar.css'
 import Link        from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
@@ -39,22 +35,37 @@ const AXES = [
     },
 ]
 
+// Role-specific workspace links — each role sees only what they can access
 const WORKSPACE_ITEMS = {
     doctor: [
-        { href: '/dashboard', icon: '🏥', label: 'Dashboard',  desc: 'Vue d\'ensemble' },
-        { href: '/clients',   icon: '👥', label: 'Patients',   desc: 'Mes dossiers patients' },
-        { href: '/history',   icon: '📂', label: 'Historique', desc: 'Mes rapports IA' },
+        { href: '/dashboard',  icon: '🏥', label: 'Dashboard',   desc: 'Vue d\'ensemble' },
+        { href: '/clients',    icon: '👥', label: 'Patients',    desc: 'Mes dossiers patients' },
+        { href: '/history',    icon: '📂', label: 'Historique',  desc: 'Mes rapports IA' },
+        { href: '/rendezvous', icon: '📅', label: 'Agenda',      desc: 'Mes rendez-vous' },
+        { href: '/profile',    icon: '👤', label: 'Mon profil',  desc: 'Modifier mon compte' },
     ],
     secretary: [
-        { href: '/dashboard', icon: '🏥', label: 'Dashboard',  desc: 'Vue d\'ensemble' },
-        { href: '/clients',   icon: '👥', label: 'Patients',   desc: 'Gérer les dossiers' },
+        { href: '/dashboard',   icon: '🏥', label: 'Dashboard',      desc: 'Vue d\'ensemble' },
+        { href: '/clients',     icon: '👥', label: 'Patients',        desc: 'Gérer les dossiers' },
         { href: '/clients/new', icon: '➕', label: 'Nouveau patient', desc: 'Créer un dossier' },
+        { href: '/rendezvous',  icon: '📅', label: 'Agenda',          desc: 'Rendez-vous patients' },
+        { href: '/profile',     icon: '👤', label: 'Mon profil',      desc: 'Modifier mon compte' },
     ],
     admin: [
         { href: '/dashboard', icon: '🔧', label: 'Admin',      desc: 'Gestion de la plateforme' },
         { href: '/clients',   icon: '👥', label: 'Patients',   desc: 'Tous les dossiers' },
         { href: '/history',   icon: '📂', label: 'Historique', desc: 'Tous les rapports' },
+        { href: '/profile',   icon: '👤', label: 'Mon profil', desc: 'Modifier mon compte' },
     ],
+} as const
+
+// Roles that can access the ML prediction axes
+const CAN_USE_AXES: ReadonlyArray<string> = ['doctor', 'admin']
+
+const ROLE_SECTION_LABEL: Record<string, string> = {
+    admin:     'Administration',
+    doctor:    'Espace de travail',
+    secretary: 'Espace de travail',
 }
 
 // ── Component ─────────────────────────────────────────────────────────────────
@@ -65,12 +76,22 @@ export default function Sidebar() {
     const pathname = usePathname()
     const router   = useRouter()
 
-    const workspaceItems = user ? WORKSPACE_ITEMS[user.role] ?? [] : []
+    const workspaceItems = user
+        ? (WORKSPACE_ITEMS[user.role as keyof typeof WORKSPACE_ITEMS] ?? [])
+        : []
+
+    const showAxes = user != null && CAN_USE_AXES.includes(user.role)
 
     function handleLogout() {
         logout()
         close()
-        router.push('/')
+        router.push('/login')
+    }
+
+    const roleLabel: Record<string, string> = {
+        doctor:    'Médecin',
+        secretary: 'Secrétaire',
+        admin:     'Administrateur',
     }
 
     return (
@@ -84,7 +105,7 @@ export default function Sidebar() {
             {/* Panel */}
             <aside className={`sidebar${isOpen ? ' sidebar--open' : ''}`}>
 
-                {/* ── En-tête ── */}
+                {/* ── Header ── */}
                 <div className="sidebar-header">
                     <div className="sidebar-logo">
                         <div className="sidebar-logo-icon">🧠</div>
@@ -105,15 +126,19 @@ export default function Sidebar() {
                 {/* ── Navigation ── */}
                 <nav className="sidebar-nav">
 
-                    {/* Workspace section (authenticated) */}
+                    {/* Workspace section */}
                     {isAuthenticated && user && workspaceItems.length > 0 && (
                         <>
                             <div className="sidebar-nav-label">
-                                {user.role === 'admin' ? 'Administration' : 'Espace de travail'}
+                                {ROLE_SECTION_LABEL[user.role] ?? 'Navigation'}
                             </div>
 
                             {workspaceItems.map(item => {
-                                const isActive = pathname === item.href || pathname.startsWith(item.href + '/')
+                                // Exact match for short routes that are prefixes of others
+                                const isExactOnly = item.href === '/dashboard' || item.href === '/clients/new'
+                                const isActive = isExactOnly
+                                    ? pathname === item.href
+                                    : pathname === item.href || pathname.startsWith(item.href + '/')
                                 return (
                                     <Link
                                         key={item.href}
@@ -139,46 +164,58 @@ export default function Sidebar() {
                         </>
                     )}
 
-                    {/* Prediction axes */}
-                    <div className="sidebar-nav-label">Axes de prédiction</div>
+                    {/* Prediction axes — doctors and admins only */}
+                    {showAxes && (
+                        <>
+                            <div className="sidebar-nav-label">Axes de prédiction</div>
 
-                    {AXES.map((ax) => {
-                        const isActive = pathname.startsWith(ax.href)
-                        return (
-                            <Link
-                                key={ax.href}
-                                href={ax.href}
-                                className={`sidebar-item sidebar-item--${ax.color}${isActive ? ' sidebar-item--active' : ''}`}
-                                onClick={close}
-                            >
-                                <div className="sidebar-item-icon">{ax.icon}</div>
+                            {AXES.map((ax) => {
+                                const isActive = pathname.startsWith(ax.href)
+                                return (
+                                    <Link
+                                        key={ax.href}
+                                        href={ax.href}
+                                        className={`sidebar-item sidebar-item--${ax.color}${isActive ? ' sidebar-item--active' : ''}`}
+                                        onClick={close}
+                                    >
+                                        <div className="sidebar-item-icon">{ax.icon}</div>
+                                        <div className="sidebar-item-content">
+                                            <div className="sidebar-item-title">
+                                                <span className="sidebar-item-axe">{ax.title}</span>
+                                                <span className="sidebar-item-sub">— {ax.subtitle}</span>
+                                            </div>
+                                            <div className="sidebar-item-desc">{ax.description}</div>
+                                        </div>
+                                        {isActive && <div className="sidebar-item-dot" />}
+                                    </Link>
+                                )
+                            })}
+
+                            <div className="sidebar-divider" />
+                        </>
+                    )}
+
+                    {/* Auth links when not logged in */}
+                    {!isAuthenticated && (
+                        <>
+                            <div className="sidebar-nav-label">Accès</div>
+                            <Link href="/login"    className="sidebar-item sidebar-item--workspace" onClick={close}>
+                                <div className="sidebar-item-icon sidebar-item-icon--ws">🔑</div>
                                 <div className="sidebar-item-content">
-                                    <div className="sidebar-item-title">
-                                        <span className="sidebar-item-axe">{ax.title}</span>
-                                        <span className="sidebar-item-sub">— {ax.subtitle}</span>
-                                    </div>
-                                    <div className="sidebar-item-desc">{ax.description}</div>
+                                    <div className="sidebar-item-title"><span className="sidebar-item-axe">Connexion</span></div>
                                 </div>
-                                {isActive && <div className="sidebar-item-dot" />}
                             </Link>
-                        )
-                    })}
-
-                    <div className="sidebar-divider" />
-
-                    {/* Accueil */}
-                    <Link href="/" className="sidebar-item sidebar-item--axe1"
-                        onClick={close} style={{ opacity: 0.6 }}>
-                        <div className="sidebar-item-icon" style={{ fontSize: '0.9rem' }}>🏠</div>
-                        <div className="sidebar-item-content">
-                            <div className="sidebar-item-title">
-                                <span className="sidebar-item-axe">Accueil</span>
-                            </div>
-                        </div>
-                    </Link>
+                            <Link href="/register" className="sidebar-item sidebar-item--workspace" onClick={close}>
+                                <div className="sidebar-item-icon sidebar-item-icon--ws">📝</div>
+                                <div className="sidebar-item-content">
+                                    <div className="sidebar-item-title"><span className="sidebar-item-axe">Inscription</span></div>
+                                </div>
+                            </Link>
+                        </>
+                    )}
                 </nav>
 
-                {/* ── Pied de page ── */}
+                {/* ── Footer ── */}
                 <div className="sidebar-footer">
                     {isAuthenticated && user ? (
                         <div className="sidebar-user">
@@ -188,7 +225,9 @@ export default function Sidebar() {
                                 </div>
                                 <div className="sidebar-user-text">
                                     <div className="sidebar-user-name">{user.full_name}</div>
-                                    <div className="sidebar-user-role">{user.role}</div>
+                                    <div className="sidebar-user-role">
+                                        {roleLabel[user.role] ?? user.role}
+                                    </div>
                                 </div>
                             </div>
                             <button
@@ -202,12 +241,7 @@ export default function Sidebar() {
                                 </svg>
                             </button>
                         </div>
-                    ) : (
-                        <div className="sidebar-auth-cta">
-                            <Link href="/login"    className="sidebar-auth-btn sidebar-auth-btn--primary" onClick={close}>Connexion</Link>
-                            <Link href="/register" className="sidebar-auth-btn sidebar-auth-btn--secondary" onClick={close}>Inscription</Link>
-                        </div>
-                    )}
+                    ) : null}
 
                     <div className="sidebar-footer-badge" style={{ marginTop: isAuthenticated ? '0.6rem' : '0.75rem' }}>
                         <span>ML Pipeline v2.0</span>

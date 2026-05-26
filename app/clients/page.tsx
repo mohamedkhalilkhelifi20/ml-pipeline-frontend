@@ -10,7 +10,8 @@ import { useEffect, useState, useMemo }    from 'react'
 import { useRouter }                        from 'next/navigation'
 import Link                                 from 'next/link'
 import { useAuth }                          from '@/contexts/AuthContext'
-import MenuButton                           from '@/components/MenuButton'
+import AppTopbar                            from '@/components/AppTopbar'
+import EditClientModal                      from '@/components/EditClientModal'
 import { getDoctorClients, getSecretaryClients, ClientOut } from '@/lib/api'
 
 function formatDate(iso: string) {
@@ -23,9 +24,10 @@ export default function ClientsPage() {
     const { user, token, isLoading, isAuthenticated } = useAuth()
     const router = useRouter()
 
-    const [clients, setClients] = useState<ClientOut[]>([])
-    const [loading, setLoading] = useState(true)
-    const [search,  setSearch]  = useState('')
+    const [clients,       setClients]       = useState<ClientOut[]>([])
+    const [loading,       setLoading]       = useState(true)
+    const [search,        setSearch]        = useState('')
+    const [editingClient, setEditingClient] = useState<ClientOut | null>(null)
 
     useEffect(() => {
         if (!isLoading && !isAuthenticated) router.replace('/login')
@@ -63,19 +65,16 @@ export default function ClientsPage() {
 
     return (
         <div className="clients-root">
-            {/* Header */}
-            <div className="clients-header">
-                <div className="clients-header-left">
-                    <MenuButton />
-                    <Link href="/dashboard" className="clients-back">
-                        ← Dashboard
-                    </Link>
-                    <span style={{ color: '#1e293b' }}>/</span>
+            <AppTopbar />
+
+            <div className="clients-body">
+                {/* Breadcrumb */}
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '1.25rem' }}>
+                    <Link href="/dashboard" className="clients-back">← Dashboard</Link>
+                    <span style={{ color: '#cbd5e1' }}>/</span>
                     <span className="clients-page-title">Patients</span>
-                </div>
-                <div className="clients-header-actions">
                     {(user.role === 'secretary' || user.role === 'admin') && (
-                        <Link href="/clients/new" className="clients-btn-primary">
+                        <Link href="/clients/new" className="clients-btn-primary" style={{ marginLeft: 'auto' }}>
                             <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
                                 <path d="M6 1v10M1 6h10" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
                             </svg>
@@ -83,10 +82,7 @@ export default function ClientsPage() {
                         </Link>
                     )}
                 </div>
-            </div>
 
-            {/* Body */}
-            <div className="clients-body">
                 {/* Toolbar */}
                 <div className="clients-toolbar">
                     <div className="clients-search-wrap">
@@ -183,13 +179,36 @@ export default function ClientsPage() {
 
                                 <div className="client-card-footer">
                                     <span className="client-date">Ajouté le {formatDate(c.created_at)}</span>
-                                    <span className="client-arrow">→</span>
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                                        {(user.role === 'secretary' || user.role === 'admin') && (
+                                            <button
+                                                className="client-edit-inline-btn"
+                                                onClick={e => { e.preventDefault(); e.stopPropagation(); setEditingClient(c) }}
+                                                title="Modifier"
+                                            >
+                                                ✏️
+                                            </button>
+                                        )}
+                                        <span className="client-arrow">→</span>
+                                    </div>
                                 </div>
                             </Link>
                         ))}
                     </div>
                 )}
             </div>
+
+            {editingClient && token && (
+                <EditClientModal
+                    token={token}
+                    client={editingClient}
+                    onClose={() => setEditingClient(null)}
+                    onSaved={updated => {
+                        setClients(prev => prev.map(c => c.id === updated.id ? updated : c))
+                        setEditingClient(null)
+                    }}
+                />
+            )}
         </div>
     )
 }

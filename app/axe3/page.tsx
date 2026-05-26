@@ -11,21 +11,23 @@
 import '@/styles/wizard.css'
 import { useState, useEffect, useCallback } from 'react'
 
-import ProgressBarAxe3  from '@/components/axe3/ProgressBarAxe3'
-import StepProfilAxe3   from '@/components/axe3/StepProfilAxe3'
-import StepNeurologie   from '@/components/axe3/StepNeurologie'
-import StepTraitement   from '@/components/axe3/StepTraitement'
-import ResultAxe3       from '@/components/axe3/ResultAxe3'
-import RapportIA        from '@/components/RapportIA'
-
-import MenuButton from '@/components/MenuButton'
+import ProgressBarAxe3 from '@/components/axe3/ProgressBarAxe3'
+import StepProfilAxe3  from '@/components/axe3/StepProfilAxe3'
+import StepNeurologie  from '@/components/axe3/StepNeurologie'
+import StepTraitement  from '@/components/axe3/StepTraitement'
+import ResultAxe3      from '@/components/axe3/ResultAxe3'
+import RapportIA       from '@/components/RapportIA'
+import NoteBlock       from '@/components/NoteBlock'
+import MenuButton      from '@/components/MenuButton'
+import ClientPicker    from '@/components/ClientPicker'
+import PostSavePanel   from '@/components/PostSavePanel'
+import { useAuth }     from '@/contexts/AuthContext'
+import { toast }       from 'sonner'
 
 import {
-    Axe3Input,
-    Axe3Results,
-    AXE3_DEFAULTS,
-    predictAxe3,
-    checkHealth,
+    Axe3Input, Axe3Results, AXE3_DEFAULTS,
+    predictAxe3, checkHealth, saveMLRapport, updateRapportNote,
+    getClient, ClientOut,
 } from '@/lib/api'
 
 // --------------------------------------------------------------------------
@@ -97,6 +99,8 @@ function ErrorView({ message, onRetry }: { message: string; onRetry: () => void 
 // --------------------------------------------------------------------------
 
 export default function Axe3Page() {
+    const { user, token } = useAuth()
+
     const [formData,      setFormData]      = useState<Axe3Input>(AXE3_DEFAULTS)
     const [currentStep,   setCurrentStep]   = useState<WizardStep>(1)
     const [pageState,     setPageState]     = useState<PageState>('wizard')
@@ -104,6 +108,17 @@ export default function Axe3Page() {
     const [result,        setResult]        = useState<Axe3Results | null>(null)
     const [errorMsg,      setErrorMsg]      = useState<string>('')
     const [backendOnline, setBackendOnline] = useState<boolean | null>(null)
+    const [clientId,      setClientId]      = useState<string | null>(null)
+    const [client,        setClient]        = useState<ClientOut | null>(null)
+    const [saving,        setSaving]        = useState(false)
+    const [savedId,       setSavedId]       = useState<string | null>(null)
+    const [note,          setNote]          = useState('')
+
+    useEffect(() => {
+        const params = new URLSearchParams(window.location.search)
+        const cid = params.get('client')
+        if (cid) { setClientId(cid); if (token) getClient(token, cid).then(setClient).catch(() => {}) }
+    }, [token])
 
     // Health check toutes les 30 s
     useEffect(() => {
@@ -111,6 +126,18 @@ export default function Axe3Page() {
         const id = setInterval(() => checkHealth().then(setBackendOnline), 30_000)
         return () => clearInterval(id)
     }, [])
+
+    const handleSaveML = useCallback(async () => {
+        if (!token || !clientId || !result) return
+        setSaving(true)
+        try {
+            const combined = { fdead: result.fdead, ddead: result.ddead }
+            const { rapport_id } = await saveMLRapport(token, 3, clientId, formData as unknown as Record<string, unknown>, combined as unknown as Record<string, unknown>)
+            if (note.trim()) await updateRapportNote(token, rapport_id, note)
+            setSavedId(rapport_id)
+        } catch (e: unknown) { toast.error(e instanceof Error ? e.message : 'Erreur lors de la sauvegarde.') }
+        finally { setSaving(false) }
+    }, [token, clientId, result, formData, note])
 
     // Gestionnaire de modification générique pour les types mixtes (string | number)
     const handleChange = useCallback(
@@ -147,38 +174,34 @@ export default function Axe3Page() {
     }, [formData])
 
     const handleRestart = useCallback(() => {
-        setFormData(AXE3_DEFAULTS)
-        setCurrentStep(1)
-        setResult(null)
-        setErrorMsg('')
-        setPageState('wizard')
+        setFormData(AXE3_DEFAULTS); setCurrentStep(1); setResult(null)
+        setSavedId(null); setErrorMsg(''); setPageState('wizard')
         window.scrollTo({ top: 0, behavior: 'smooth' })
     }, [])
 
     const showProgress = pageState === 'wizard' || pageState === 'loading'
+    const isDoctor   = user?.role === 'doctor'
+    const clientName = client ? `${client.prenom} ${client.nom}` : ''
 
     return (
         <div className="wizard-page">
-
-            {/* ── Navbar ── */}
             <nav className="wizard-nav">
                 <div className="wizard-nav-left">
                     <MenuButton />
                     <div className="wizard-nav-logo">🧠</div>
-                    <span className="wizard-nav-title">
-                        Stroke<span>AI</span>
-                    </span>
+                    <span className="wizard-nav-title">Stroke<span>AI</span></span>
                     <div className="wizard-nav-sep" />
                     <span className="wizard-nav-axe">Axe 3 — Mortalité AVC</span>
                 </div>
-                <div className="wizard-nav-right">
-                    <div className={`wizard-status ${
-                        backendOnline ? 'wizard-status--online' : 'wizard-status--offline'
-                    }`}>
+                <div className="wizard-nav-right" style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                    {client && (
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', background: '#eff6ff', border: '1px solid #bfdbfe', borderRadius: 8, padding: '0.3rem 0.65rem', fontSize: '0.75rem', fontWeight: 600, color: '#1d4ed8' }}>
+                            👤 {clientName}
+                        </div>
+                    )}
+                    <div className={`wizard-status ${backendOnline ? 'wizard-status--online' : 'wizard-status--offline'}`}>
                         <span className="wizard-status-dot" />
-                        {backendOnline === null ? 'Connexion…'
-                            : backendOnline ? 'Backend actif'
-                                : 'Backend hors ligne'}
+                        {backendOnline === null ? 'Connexion…' : backendOnline ? 'Backend actif' : 'Backend hors ligne'}
                     </div>
                 </div>
             </nav>
@@ -248,11 +271,31 @@ export default function Axe3Page() {
                 {pageState === 'result' && result && (
                     <div className="step-enter">
                         <ResultAxe3 results={result} onRestart={handleRestart} />
-                        <RapportIA
-                            axe={3}
-                            patient={formData as unknown as Record<string, unknown>}
-                            prediction={result as unknown as Record<string, unknown>}
-                        />
+
+                        {savedId && clientId && client ? (
+                            <PostSavePanel rapportId={savedId} clientId={clientId} clientName={clientName} currentAxe={3} onNewPredict={handleRestart} />
+                        ) : isDoctor && !savedId && (
+                            <div style={{ margin: '1.25rem auto', maxWidth: 560 }}>
+                                {!clientId && token && (
+                                    <div style={{ marginBottom: '0.75rem' }}>
+                                        <div style={{ fontSize: '0.72rem', fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '0.4rem' }}>
+                                            Sélectionner un patient pour enregistrer
+                                        </div>
+                                        <ClientPicker token={token} onSelect={c => { setClient(c); setClientId(c.id) }} />
+                                    </div>
+                                )}
+                                {clientId && (
+                                    <div style={{ display: 'flex', justifyContent: 'center' }}>
+                                        <button onClick={handleSaveML} disabled={saving} style={{ background: 'linear-gradient(135deg,#2563eb,#7c3aed)', color: '#fff', border: 'none', borderRadius: 12, padding: '0.75rem 2rem', fontWeight: 700, fontSize: '0.9rem', cursor: saving ? 'not-allowed' : 'pointer', opacity: saving ? 0.7 : 1, width: '100%' }}>
+                                            {saving ? '⏳ Enregistrement…' : `💾 Enregistrer dans le dossier${client ? ` de ${clientName}` : ''}`}
+                                        </button>
+                                    </div>
+                                )}
+                            </div>
+                        )}
+
+                        <RapportIA axe={3} patient={formData as unknown as Record<string, unknown>} prediction={result as unknown as Record<string, unknown>} token={token ?? undefined} clientId={clientId ?? undefined} onSaved={id => setSavedId(id)} />
+                        {isDoctor && <NoteBlock rapportId={savedId} token={token} note={note} onChange={setNote} />}
                     </div>
                 )}
 

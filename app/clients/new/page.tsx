@@ -1,16 +1,18 @@
 'use client'
 
 // =============================================================================
-// app/clients/new/page.tsx — Create new patient (secretary)
+// app/clients/new/page.tsx — Créer un dossier patient (secrétaire)
+// Secrétaire : nom, prénom, sexe, date naissance, téléphone, adresse
+// doctor_id auto-assigné côté backend depuis assigned_doctor_id
 // =============================================================================
 
 import '@/styles/clients.css'
 import '@/styles/dashboard.css'
 import React, { useEffect, useState } from 'react'
-import { useRouter }                       from 'next/navigation'
-import Link                                from 'next/link'
-import { useAuth }                         from '@/contexts/AuthContext'
-import MenuButton                          from '@/components/MenuButton'
+import { useRouter }   from 'next/navigation'
+import Link            from 'next/link'
+import { useAuth }     from '@/contexts/AuthContext'
+import AppTopbar       from '@/components/AppTopbar'
 import { createClient, listDoctors, UserOut, ApiError } from '@/lib/api'
 
 export default function NewClientPage() {
@@ -23,7 +25,6 @@ export default function NewClientPage() {
     const [sexe,           setSexe]           = useState<'M' | 'F' | ''>('')
     const [telephone,      setTelephone]      = useState('')
     const [adresse,        setAdresse]        = useState('')
-    const [notes,          setNotes]          = useState('')
     const [doctorId,       setDoctorId]       = useState('')
     const [doctors,        setDoctors]        = useState<UserOut[]>([])
     const [loadingDoctors, setLoadingDoctors] = useState(false)
@@ -35,7 +36,7 @@ export default function NewClientPage() {
         if (!isLoading && !isAuthenticated) router.replace('/login')
     }, [isLoading, isAuthenticated, router])
 
-    // Admin can pick doctor — secretary already has one assigned in backend
+    // Admin : charger la liste des médecins pour le sélecteur
     useEffect(() => {
         if (user?.role !== 'admin' || !token) return
         setLoadingDoctors(true)
@@ -55,10 +56,10 @@ export default function NewClientPage() {
                 prenom,
                 date_naissance: dateNaissance || undefined,
                 sexe:           (sexe as 'M' | 'F') || undefined,
-                telephone:      telephone || undefined,
-                adresse:        adresse   || undefined,
-                notes:          notes     || undefined,
-                doctor_id:      user?.role === 'admin' && doctorId ? doctorId : undefined,
+                telephone:      telephone  || undefined,
+                adresse:        adresse    || undefined,
+                // secrétaire : pas de doctor_id — auto-assigné côté backend
+                doctor_id: user?.role === 'admin' && doctorId ? doctorId : undefined,
             })
             setSuccess(true)
             setTimeout(() => router.push(`/clients/${created.id}`), 900)
@@ -77,16 +78,10 @@ export default function NewClientPage() {
         )
     }
 
-    // Only secretary and admin can create clients
     if (user.role === 'doctor') {
         return (
             <div className="client-form-root">
-                <div className="clients-header">
-                    <div className="clients-header-left">
-                        <MenuButton />
-                        <Link href="/clients" className="clients-back">← Patients</Link>
-                    </div>
-                </div>
+                <AppTopbar />
                 <div className="client-form-body" style={{ textAlign: 'center', paddingTop: '4rem' }}>
                     <div style={{ fontSize: '2.5rem', marginBottom: '1rem' }}>🔒</div>
                     <div style={{ color: '#64748b', fontSize: '0.9rem' }}>
@@ -99,21 +94,18 @@ export default function NewClientPage() {
 
     return (
         <div className="client-form-root">
-            {/* Header */}
-            <div className="clients-header">
-                <div className="clients-header-left">
-                    <MenuButton />
+            <AppTopbar />
+
+            <div className="client-form-body" style={{ paddingTop: '1.5rem' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '1.5rem' }}>
                     <Link href="/clients" className="clients-back">← Patients</Link>
-                    <span style={{ color: '#1e293b' }}>/</span>
+                    <span style={{ color: '#cbd5e1' }}>/</span>
                     <span className="clients-page-title">Nouveau patient</span>
                 </div>
-            </div>
-
-            <div className="client-form-body">
                 <div className="client-form-card">
                     <div className="client-form-title">Créer un dossier patient</div>
                     <div className="client-form-sub">
-                        Renseignez les informations du nouveau patient
+                        Un numéro de dossier unique sera généré automatiquement
                     </div>
 
                     {error && (
@@ -128,7 +120,7 @@ export default function NewClientPage() {
 
                     {success && (
                         <div className="clients-success">
-                            ✓ Patient créé avec succès. Redirection…
+                            ✓ Dossier patient créé. Redirection…
                         </div>
                     )}
 
@@ -165,7 +157,7 @@ export default function NewClientPage() {
                                 <input id="ddn" type="date" className="client-form-input"
                                     value={dateNaissance}
                                     onChange={e => setDateNaissance(e.target.value)}
-                                    style={{ colorScheme: 'dark' }}
+                                    style={{ colorScheme: 'light' }}
                                 />
                             </div>
                         </div>
@@ -191,10 +183,10 @@ export default function NewClientPage() {
                             <>
                                 <div className="client-form-section">Assignation</div>
                                 <div className="client-form-field">
-                                    <label className="client-form-label" htmlFor="doctor">Médecin assigné</label>
+                                    <label className="client-form-label" htmlFor="doctor">Médecin assigné *</label>
                                     <select id="doctor" className="client-form-input client-form-select"
                                         value={doctorId} onChange={e => setDoctorId(e.target.value)}
-                                        disabled={loadingDoctors}>
+                                        disabled={loadingDoctors} required>
                                         <option value="">
                                             {loadingDoctors ? 'Chargement…' : 'Sélectionner un médecin'}
                                         </option>
@@ -208,15 +200,6 @@ export default function NewClientPage() {
                             </>
                         )}
 
-                        <div className="client-form-section">Notes cliniques</div>
-
-                        <div className="client-form-field">
-                            <label className="client-form-label" htmlFor="notes">Observations</label>
-                            <textarea id="notes" className="client-form-input client-form-textarea"
-                                placeholder="Antécédents médicaux, allergies, informations complémentaires…"
-                                value={notes} onChange={e => setNotes(e.target.value)} />
-                        </div>
-
                         <div className="client-form-actions">
                             <Link href="/clients" className="clients-btn-secondary">
                                 Annuler
@@ -227,7 +210,7 @@ export default function NewClientPage() {
                                         <span className="auth-spinner" style={{ width: 12, height: 12 }} />
                                         Création…
                                     </>
-                                ) : '✓ Créer le patient'}
+                                ) : '✓ Créer le dossier'}
                             </button>
                         </div>
                     </form>

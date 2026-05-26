@@ -1,7 +1,7 @@
 'use client'
 
 // =============================================================================
-// app/history/page.tsx — Report history list with filters + search
+// app/history/page.tsx — Liste des rapports avec filtres + recherche
 // =============================================================================
 
 import '@/styles/history.css'
@@ -9,9 +9,10 @@ import '@/styles/dashboard.css'
 import { useEffect, useState, useMemo } from 'react'
 import { useRouter }                     from 'next/navigation'
 import Link                              from 'next/link'
+import { toast }                         from 'sonner'
 import { useAuth }                       from '@/contexts/AuthContext'
-import MenuButton                        from '@/components/MenuButton'
-import { listMyHistory, deleteHistoryItem, RapportOut } from '@/lib/api'
+import AppTopbar                         from '@/components/AppTopbar'
+import { listMyHistory, deleteHistoryItem, deleteAllRapports, RapportOut } from '@/lib/api'
 
 const AXE_META: Record<number, { label: string; icon: string }> = {
     1: { label: 'Risque AVC',    icon: '🎯' },
@@ -30,11 +31,14 @@ export default function HistoryPage() {
     const { user, token, isLoading, isAuthenticated } = useAuth()
     const router = useRouter()
 
-    const [reports,  setReports]  = useState<RapportOut[]>([])
-    const [loading,  setLoading]  = useState(true)
-    const [search,   setSearch]   = useState('')
-    const [axeFilter, setAxeFilter] = useState<number | null>(null)
-    const [deleting,  setDeleting]  = useState<string | null>(null)
+    const [reports,       setReports]       = useState<RapportOut[]>([])
+    const [loading,       setLoading]       = useState(true)
+    const [search,        setSearch]        = useState('')
+    const [axeFilter,     setAxeFilter]     = useState<number | null>(null)
+    const [deleting,      setDeleting]      = useState<string | null>(null)
+    const [deletingAll,   setDeletingAll]   = useState(false)
+
+    const isDoctor = user?.role === 'doctor' || user?.role === 'admin'
 
     useEffect(() => {
         if (!isLoading && !isAuthenticated) router.replace('/login')
@@ -60,18 +64,56 @@ export default function HistoryPage() {
         return list.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
     }, [reports, axeFilter, search])
 
-    async function handleDelete(e: React.MouseEvent, id: string) {
+    function handleDeleteAll() {
+        if (!token || reports.length === 0) return
+        toast(`Supprimer les ${reports.length} rapport(s) ?`, {
+            description: 'Cette action est irréversible. Tous vos rapports et documents associés seront définitivement supprimés.',
+            action: {
+                label: 'Supprimer tout',
+                onClick: () => {
+                    setDeletingAll(true)
+                    toast.promise(
+                        deleteAllRapports(token)
+                            .then(n => { setReports([]); return n })
+                            .finally(() => setDeletingAll(false)),
+                        {
+                            loading: 'Suppression en cours…',
+                            success: n => `${n} rapport(s) supprimé(s).`,
+                            error:   'Erreur lors de la suppression.',
+                        }
+                    )
+                },
+            },
+            cancel: { label: 'Annuler', onClick: () => {} },
+            duration: 10000,
+        })
+    }
+
+    function handleDelete(e: React.MouseEvent, r: RapportOut) {
         e.preventDefault()
         e.stopPropagation()
         if (!token) return
-        if (!window.confirm('Supprimer ce rapport ? Cette action est irréversible.')) return
-        setDeleting(id)
-        try {
-            await deleteHistoryItem(token, id)
-            setReports(prev => prev.filter(r => r.id !== id))
-        } finally {
-            setDeleting(null)
-        }
+
+        toast(`Supprimer le rapport de ${r.patient_prenom} ${r.patient_nom} ?`, {
+            description: 'Cette action est irréversible.',
+            action: {
+                label: 'Supprimer',
+                onClick: async () => {
+                    setDeleting(r.id)
+                    try {
+                        await deleteHistoryItem(token, r.id)
+                        setReports(prev => prev.filter(x => x.id !== r.id))
+                        toast.success('Rapport supprimé.')
+                    } catch (err: unknown) {
+                        toast.error(err instanceof Error ? err.message : 'Erreur lors de la suppression.')
+                    } finally {
+                        setDeleting(null)
+                    }
+                },
+            },
+            cancel: { label: 'Annuler', onClick: () => {} },
+            duration: 8000,
+        })
     }
 
     if (isLoading || !user) {
@@ -85,18 +127,16 @@ export default function HistoryPage() {
 
     return (
         <div className="history-root">
-            {/* Header */}
-            <div className="history-header">
-                <div className="history-header-left">
-                    <MenuButton />
+            <AppTopbar />
+
+            <div className="history-body">
+                {/* Breadcrumb */}
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '1.25rem' }}>
                     <Link href="/dashboard" className="history-back">← Dashboard</Link>
-                    <span style={{ color: '#1e293b' }}>/</span>
+                    <span style={{ color: '#cbd5e1' }}>/</span>
                     <span className="history-page-title">Historique des rapports</span>
                 </div>
-            </div>
 
-            {/* Body */}
-            <div className="history-body">
                 {/* Toolbar */}
                 <div className="history-toolbar">
                     <div className="history-search-wrap">
@@ -134,6 +174,25 @@ export default function HistoryPage() {
                     <span className="history-count">
                         {filtered.length} rapport{filtered.length !== 1 ? 's' : ''}
                     </span>
+
+                    {isDoctor && reports.length > 0 && (
+                        <button
+                            className="history-delete-all-btn"
+                            onClick={handleDeleteAll}
+                            disabled={deletingAll}
+                            title="Supprimer tous vos rapports"
+                        >
+                            {deletingAll ? (
+                                <span className="history-delete-all-spinner" />
+                            ) : (
+                                <svg width="13" height="13" viewBox="0 0 12 12" fill="none">
+                                    <path d="M2 3h8M5 3V2h2v1M4 3v7h4V3H4z"
+                                        stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round"/>
+                                </svg>
+                            )}
+                            {deletingAll ? 'Suppression…' : 'Tout supprimer'}
+                        </button>
+                    )}
                 </div>
 
                 {/* List */}
@@ -158,7 +217,7 @@ export default function HistoryPage() {
                 ) : (
                     <div className="history-list">
                         {filtered.map(r => {
-                            const meta = AXE_META[r.axe] ?? AXE_META[1]
+                            const meta   = AXE_META[r.axe] ?? AXE_META[1]
                             const axeTag = `axe${r.axe}` as 'axe1' | 'axe2' | 'axe3'
                             const verdict = r.prediction?.verdict as string | undefined
                             return (
@@ -174,6 +233,16 @@ export default function HistoryPage() {
                                             <div className="history-row-meta">
                                                 {formatDateTime(r.created_at)}
                                                 {r.medecin_nom ? ` · Dr. ${r.medecin_nom}` : ''}
+                                                {r.note_medecin && (
+                                                    <span style={{ marginLeft: '0.4rem', color: '#7c3aed', fontWeight: 600 }}>
+                                                        ✏️ Note
+                                                    </span>
+                                                )}
+                                                {r.documents_lab?.length > 0 && (
+                                                    <span style={{ marginLeft: '0.4rem', color: '#0369a1' }}>
+                                                        📎 {r.documents_lab.length}
+                                                    </span>
+                                                )}
                                             </div>
                                         </div>
                                     </div>
@@ -188,18 +257,16 @@ export default function HistoryPage() {
                                         {(user.role === 'doctor' || user.role === 'admin') && (
                                             <button
                                                 className="history-delete-btn"
-                                                onClick={e => handleDelete(e, r.id)}
+                                                onClick={e => handleDelete(e, r)}
                                                 disabled={deleting === r.id}
                                                 title="Supprimer ce rapport"
                                             >
-                                                {deleting === r.id
-                                                    ? '…'
-                                                    : (
-                                                        <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
-                                                            <path d="M2 3h8M5 3V2h2v1M4 3v7h4V3H4z"
-                                                                stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round"/>
-                                                        </svg>
-                                                    )}
+                                                {deleting === r.id ? '…' : (
+                                                    <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+                                                        <path d="M2 3h8M5 3V2h2v1M4 3v7h4V3H4z"
+                                                            stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round"/>
+                                                    </svg>
+                                                )}
                                             </button>
                                         )}
                                         <span style={{ color: '#334155', fontSize: '0.8rem' }}>›</span>
